@@ -4,7 +4,7 @@
 
 This sample project provides you to demonstrate delivery order dispatching and route optimization application. In general logistics services, there are complex business considerations. And finding featable route for dispatching order usually rely on real drive-way on map. 
 
-This project uses the [AWS CDK](https://aws.amazon.com/cdk/) to configure the infrastructure. The backend is consisted with [AWS Serverless Services](https://aws.amazon.com/serverless/) for an agile and flexible start, and the [Northstar design system](https://github.com/aws/aws-northstar) used for UI to display the optimization results.
+This project uses the [AWS CDK](https://aws.amazon.com/cdk/) to configure the infrastructure. The backend system is configured with agility and flexibility using  [AWS Serverless Services](https://aws.amazon.com/serverless/), and the [Northstar design system](https://github.com/aws/aws-northstar) used for UI to display the optimization results.
 
 ## Demo Scenerio
 
