@@ -20,7 +20,11 @@ This project includes sample order data about delivering medical supplies. See b
 ## Getting Started
 
 * [Quickstart guide](./docs/quickstart.md)
+    * Quick start guide to setup and deploy project 
+    * Configuring development environment
+
 * [Uninstall](./docs/content/screenshots.md)
+    * Guide to uninstall and releasing resources.
 
 ## Architecture
 
