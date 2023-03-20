@@ -27,6 +27,3 @@ Delete the two tables that contain metadata about your dashboard and datasets.
 1. Select the tables that start with the namespace you set in the configuration before deployment.
 1. Choose Delete table.
 1. Type delete, and choose Delete.
-1. Select the table that starts with the same name as your stack, and has the string MainTable in the name.
-1. Choose Delete table.
-1. Type delete, and choose Delete.
