@@ -1,0 +1,82 @@
+{
+  "name": "@apps/website",
+  "version": "1.0.0",
+  "description": "Route Optimizaion - Web App",
+  "author": "Amazon Web Services - Prototyping Team",
+  "contributors": [
+    "Pilmo Kang <pmkang@amazon.com>",
+    "Greg Varga <gergelyv@amazon.com>"
+  ],
+  "license": "ASL",
+  "private": true,
+  "dependencies": {
+    "@aws-amplify/auth": "^4.3.0",
+    "@aws-amplify/ui-react": "^1.2.10",
+    "@mapbox/polyline": "^1.1.1",
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "@types/jest": "^26.0.15",
+    "@types/node": "^16.7.1",
+    "@types/react": "17.0.2",
+    "@types/react-dom": "17.0.2",
+    "amazon-cognito-identity-js": "^5.2.3",
+    "aws-amplify": "^4.2.4",
+    "aws-northstar": "^1.3.12",
+    "axios": "^0.25.0",
+    "chart.js": "^3.5.1",
+    "dayjs": "^1.10.7",
+    "immer": "^9.0.12",
+    "kaktana-react-lightweight-charts": "^2.0.0",
+    "mapbox-gl": "^2.2.0",
+    "react": "17.0.2",
+    "react-chartjs-2": "^3.1.1",
+    "react-dom": "17.0.2",
+    "react-dropzone": "^11.3.5",
+    "react-dropzone-uploader": "^2.11.0",
+    "react-image-gallery": "^1.2.7",
+    "react-intl": "^5.20.13",
+    "react-map-gl": "^6.1.11",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "4.0.3",
+    "typescript": "^4.5.5",
+    "use-immer": "^0.6.0",
+    "uuid": "^8.3.2",
+    "web-vitals": "^1.0.1",
+    "worker-loader": "^3.0.8"
+  },
+  "scripts": {
+    "start": "SKIP_PREFLIGHT_CHECK=true react-scripts start",
+    "build": "SKIP_PREFLIGHT_CHECK=true react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@config/eslint": "0.0.1",
+    "@types/lodash": "^4.14.178",
+    "@types/mapbox-gl": "^2.1.1",
+    "@types/mapbox__polyline": "^1.0.2",
+    "@types/react-image-gallery": "^1.0.5",
+    "@types/react-router-dom": "^5.1.8",
+    "cross-env": "^7.0.3",
+    "prettier": "^2.5.1"
+  }
+}

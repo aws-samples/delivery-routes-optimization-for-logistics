@@ -1,0 +1,106 @@
+---
+Copyright: >
+ # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ # SPDX-License-Identifier: MIT-0
+ 
+# environment vars
+env:
+  # AWS Account ID (12-digit integer)
+  account: '000000000000'
+
+  # AWS region string
+  region: ap-northeast-2
+
+# token for mapBox
+mapBoxToken: XXXXXX
+
+# string prefix for resources created by CDK
+namespace: devproto
+
+# the administrator email address
+# make sure this is accurate, cognito will send a temporary password once the deployment goes through
+administratorEmail: your-email@example.com
+
+# instance options for container
+instanceOptions:
+  # distance cache
+  distCacheInstanceType: c6g.2xlarge
+  distCacheHardwareType: arm64
+  # optimization engine
+  optEngineInstanceType: c6g.2xlarge
+  optEngineHardwareType: arm64
+
+# SSM ParameterStore keys
+parameterStoreKeys:
+  # keys for VPC
+  commonVpcId: /DevProto/VPC/Common/VpcId
+
+  # key for orders table
+  ordersTableName: /DevProto/Ddb/Orders/TableName
+
+  # key for orders bucket
+  ordersBucketName: /DevProto/S3/Orders/BucketName
+
+  # key for orders status index
+  ordersStatusIndex: /DevProto/Ddb/Orders/Index/Status
+
+  # key for solver jobs table
+  solverJobsTableName: /DevProto/Ddb/SolverJobs/TableName
+
+  # key for delivery jobs table
+  deliveryJobsTableName: /DevProto/Ddb/DeliveryJobs/TableName
+
+  # key for delivery job index
+  deliveryJobSolverJobIdIndex: /DevProto/Ddb/DeliveryJobs/Index/SolverJobId
+
+  # key for customer locations table
+  customerLocationsTableName: /DevProto/Ddb/CustomerLocations/TableName
+
+  # key for locaiton warehouse index
+  customerLocationsWarehouseCodeIndex: /DevProto/Ddb/CustomerLocations/Index/WarehouseCode
+
+  # key for warehouses table
+  warehousesTableName: /DevProto/Ddb/Warehouses/TableName
+
+  # key for warehouses indes
+  warehouseCodeIndex: /DevProto/Ddb/Warehouses/Index/WarehouseCode
+
+  # key for vehicles table
+  vehiclesTableName: /DevProto/Ddb/Vehicles/TableName
+
+  # key for order upload api url
+  orderUploadApiUrl: /DevProto/Api/Order/Upload/Url
+
+  # key for order upload api key
+  orderUploadApiKeySufffix: todnRkd-Wkvkrpxl-11
+
+  # key for order upload api key
+  orderUploadApiKey: /DevProto/Api/Order/Upload/Key
+
+  # key for distance cache
+  distanceCacheBucket: /DevProto/S3/DistanceCache/BucketName
+  distanceCacheTableName: /DevProto/DDB/DistanceCache/TableName
+
+  # key for distance ecs cluster
+  distanceCacheClusterName: /DevProto/ECS/DistanceCache/ClusterName
+
+  # key for distance auto scaling group capacity provider
+  distanceCacheAsgCapacityProvider: /DevProto/ECS/DistanceCache/AsgCapacityProvider
+
+  # key for distance ecs task definition
+  distanceCacheTaskDefArn: /DevProto/ECS/DistanceCache/TaskDefArn
+
+  # key for distance ecs task container name
+  distanceCacheContainerName:  /DevProto/ECS/DistanceCache/ContainerName
+
+  # key for optimization engine ecs cluster
+  optEngineClusterName: /DevProto/ECS/OptEngine/ClusterName
+
+  # key for optimization engine auto scaling group capacity provider
+  optEngineAsgCapacityProvider: /DevProto/ECS/OptEngine/AsgCapacityProvider
+
+  # key for optimization engine ecs task definition
+  optEngineTaskDefArn: /DevProto/ECS/OptEngine/TaskDefArn
+
+  # key for optimization engine ecs task container name
+  optEngineContainerName:  /DevProto/ECS/OptEngine/ContainerName

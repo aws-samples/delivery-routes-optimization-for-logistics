@@ -1,0 +1,33 @@
+{
+  "name": "@infra/common",
+  "description": "Common utility functions and consts",
+  "version": "0.0.0-alpha.0",
+  "license": "MIT-0",
+  "author": "Amazon Web Services - Prototying Team",
+  "contributors": [
+    "Pilmo Kang <pmkang@amazon.com>",
+    "Greg Varga <gergelyv@amazon.com>",
+    "Jeremy Jonas <jerjonas@amazon.com>"
+  ],
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "directories": {
+    "lib": "dist",
+    "test": "test"
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc --project tsconfig.json",
+    "watch": "yarn build --watch",
+    "test": "jest"
+  },
+  "dependencies": {
+    "cdk-iam-actions": "^1.0.0",
+    "shorthash2": "^1.0.3"
+  },
+  "peerDependencies": {
+    "aws-cdk-lib": "^2.59.0",
+    "constructs": "^10.1.211",
+    "typescript": "^4.5.5"
+  }
+}

@@ -1,0 +1,95 @@
+/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
+
+package dev.aws.proto.apps.nextday.data;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.aws.proto.apps.appcore.data.DdbServiceBase;
+import dev.aws.proto.apps.nextday.api.response.SolverJob;
+import dev.aws.proto.apps.nextday.config.DdbProperties;
+import dev.aws.proto.core.util.aws.SsmUtility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+@ApplicationScoped
+public class DdbSolverJobService extends DdbServiceBase {
+    private static final Logger logger = LoggerFactory.getLogger(DdbSolverJobService.class);
+
+    /**
+     * Config properties for DDB connection.
+     */
+    @Inject
+    DdbProperties ddbProperties;
+
+    /**
+     * The DDB table name.
+     */
+    final String tableName;
+
+    DdbSolverJobService(DdbProperties ddbProperties) {
+        this.ddbProperties = ddbProperties;
+        this.tableName = SsmUtility.getParameterValue(ddbProperties.solverJobsTableParameterName());
+        super.dbClient = super.createDBClient();
+    }
+
+    @Override
+    protected String getTableName() {
+        return this.tableName;
+    }
+
+    @Override
+    protected Map<String, AttributeValue> getPutItemMap(Object solverJob_) {
+        SolverJob solverJob = (SolverJob) solverJob_;
+
+        Map<String, AttributeValue> item = new HashMap<>();
+        item.put("Id", AttributeValue.builder().s(solverJob.getProblemId().toString()).build());
+        item.put("score", AttributeValue.builder().s(solverJob.getScore()).build());
+        item.put("state", AttributeValue.builder().s(solverJob.getState()).build());
+        item.put("createdAt", AttributeValue.builder().n(String.valueOf(solverJob.getCreatedAt())).build());
+        item.put("executionId", AttributeValue.builder().s(solverJob.getExecutionId()).build());
+        item.put("solverDurationInMs", AttributeValue.builder().n(String.valueOf(solverJob.getSolverDurationInMs())).build());
+        item.put("warehouseCode", AttributeValue.builder().s(solverJob.getWarehouseCode()).build());
+        if(solverJob.getWarehouseName() != null) item.put("warehouseName", AttributeValue.builder().s(solverJob.getWarehouseName()).build());
+        item.put("orderDate", AttributeValue.builder().s(solverJob.getOrderDate()).build());
+        if(solverJob.getOrderCount() >= 0) item.put("orderCount", AttributeValue.builder().s(String.valueOf(solverJob.getOrderCount())).build());
+
+        return item;
+    }
+
+    public void save(SolverJob solverJob) {
+        super.dbClient.putItem(super.putRequest(solverJob));
+
+        logger.info("SolverJob saved: {}", solverJob);
+    }
+
+    public SolverJob getItem(UUID problemId) {
+        List<Map<String, AttributeValue>> dbItems = super.dbClient.query(this.getQueryRequest("ID", problemId)).items();
+        if (dbItems.size() == 0) {
+            return null;
+        }
+
+        Map<String, AttributeValue> dbItem = dbItems.get(0);
+        ObjectMapper mapper = new ObjectMapper();
+
+        SolverJob result = SolverJob.builder()
+                .problemId(problemId)
+                .createdAt(Long.parseLong(dbItem.get("createdAt").n()))
+                .score(dbItem.get("score").s())
+                .solverDurationInMs(Long.parseLong(dbItem.get("solverDurationInMs").n()))
+                .state(dbItem.get("state").s())
+                .executionId(dbItem.get("executionId").s())
+                .build();
+
+        return result;
+    }
+}

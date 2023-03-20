@@ -1,0 +1,30 @@
+{
+  "name": "@infra/networking",
+  "description": "Network Infra stacks",
+  "version": "0.0.0-alpha.0",
+  "license": "MIT-0",
+  "author": "Amazon Web Services - Prototying Team",
+  "contributors": [
+    "Pilmo Kang<pmkang@amazon.com>"
+  ],
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "directories": {
+    "lib": "dist",
+    "test": "test"
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc --project tsconfig.json",
+    "watch": "yarn build --watch",
+    "test": "jest"
+  },
+  "peerDependencies": {
+    "aws-cdk-lib": "^2.59.0",
+    "constructs": "^10.1.211",
+    "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "@infra/common": "^0.0.0-alpha.0"
+  }
+}

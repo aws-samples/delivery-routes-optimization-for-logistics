@@ -1,0 +1,16 @@
+FROM amazoncorretto:17 as distancecache
+WORKDIR /root
+COPY delivery-dispatch-runner.jar \
+     ./delivery-dispatch-runner.jar
+
+COPY solver-config.xml \
+     ./solver-config.xml
+
+RUN mkdir -p .graphhopper/graphhopper
+RUN mkdir -p .graphhopper/openstreetmap
+RUN curl https://download.geofabrik.de/asia/south-korea-latest.osm.pbf \
+    -o .graphhopper/openstreetmap/south-korea-latest.osm.pbf
+
+RUN echo 'export $(strings /proc/1/environ | grep AWS_CONTAINER_CREDENTIALS_RELATIVE_URI)' >> /root/.profile
+
+CMD ["java", "-jar", "-Dorder-date=$ORDER_DATE", "-Dwarehouse-code=$WAREHOUSE_CODE", "delivery-dispatch-runner.jar"]

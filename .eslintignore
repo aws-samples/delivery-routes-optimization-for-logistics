@@ -1,0 +1,10 @@
+dist/
+build/
+*.d.ts
+node_modules
+_templates
+cdk.out.dev
+docs/
+
+*.html
+tsconfig.eslint.json

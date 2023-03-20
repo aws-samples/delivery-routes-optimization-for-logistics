@@ -1,0 +1,13 @@
+{
+  "name": "@config/types",
+  "version": "0.0.1",
+  "description": "Global types def",
+  "main": "index.js",
+  "author": "Amazon Web Services - ASEAN Prototying <aws-asean-sa-prototyping@amazon.com>",
+  "contributors": [
+    "Greg Varga <gergelyv@amazon.com>",
+    "Jeremy Jonas <jerjonas@amazon.com>"
+  ],
+  "license": "MIT-0",
+  "private": true
+}

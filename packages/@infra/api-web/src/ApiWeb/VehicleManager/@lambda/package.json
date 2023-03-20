@@ -1,0 +1,17 @@
+{
+  "name": "@lambda/vehicle-manager",
+  "version": "1.0.0",
+  "description": "",
+  "private": "true",
+  "main": "index.js",
+  "scripts": {
+    "mkdir": "mkdir -p ../../../../dist/@lambda",
+    "zipasset": "zip -FSrq ../../../../dist/$npm_package_name.zip *",
+    "build": "yarn mkdir &&  yarn zipasset"
+  },
+  "author": "Amazon Web Services - Prototyping Team",
+  "contributors": [
+    "Pilmo Kang <pmkang@amazon.com>"
+  ],
+  "license": "MIT-0"
+}

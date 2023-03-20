@@ -1,0 +1,58 @@
+{
+  "name": "@apps/infra",
+  "version": "1.0.0",
+  "description": "Route Optimization App - Infra",
+  "author": "Amazon Web Services - Prototyping Team",
+  "contributors": [
+    "Pilmo Kang <pmkang@amazon.com>",
+    "Greg Varga <gergelyv@amazon.com>"
+  ],
+  "license": "ASL",
+  "private": true,
+  "bin": {
+    "infra": "bin/dev-infra.js"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "aws-cdk",
+    "synth": "cdk synth",
+    "cdk:bootstrap": "cdk bootstrap",
+    "dev:cdk": "cdk --app=\"npx ts-node --prefer-ts-exts bin/dev-infra.ts\" --output cdk.out.dev",
+    "dev:deploy": "yarn dev:cdk deploy --require-approval never --all",
+    "dev:DESTROY:all": "yarn dev:cdk destroy --all",
+    "dev:synth": "yarn dev:cdk synth",
+    "cfn-nag": "mkdir -p ../../reports && cfn_nag_scan --input-path=./cdk.out.dev/ --template-pattern .*\\.template\\.json --output-format json > ../../reports/cfn-nag-report.json",
+    "cfn-nag:install": "brew install ruby brew-gem && brew gem install cfn-nag",
+    "prereview": "yarn dev:synth",
+    "review": "yarn cfn-nag"
+  },
+  "devDependencies": {
+    "aws-cdk": "^2.30.0",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "@infra/api-web": "0.0.0-alpha.0",
+    "@infra/cognito-auth": "0.0.0-alpha.0",
+    "@infra/common": "0.0.0-alpha.0",
+    "@infra/data-storage": "0.0.0-alpha.0",
+    "@infra/web-hosting": "0.0.0-alpha.0",
+    "@types/jest": "^27.0.3",
+    "@types/node": "^16.11.10",
+    "@typescript-eslint/typescript-estree": "^5.10.0",
+    "aws-cdk-lib": "^2.59.0",
+    "config": "^3.3.6",
+    "constructs": "^10.1.211",
+    "hygen": "^6.1.0",
+    "jest": "^27.4.3",
+    "lint-staged": "^12.1.2",
+    "node-notifier": "^10.0.0",
+    "prettier": "^2.5.0",
+    "source-map-support": "^0.5.16",
+    "ts-jest": "^27.1.0",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.5"
+  }
+}

@@ -1,0 +1,168 @@
+/**
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: MIT-0
+ */
+
+/* eslint-disable @typescript-eslint/no-this-alias */
+
+declare interface ILatLong {
+  lat: number
+  long: number
+}
+
+declare let appVariables: {
+  DEFAULT_AREAS: ILatLong[]
+}
+
+const groupAreas = (areas: any[], maxGroup = 0): any[] => {
+  const groups = []
+
+  for (let i = 0; i < areas.length; i += 3) {
+    const group = []
+    group.push(areas[i])
+    areas[i + 1] && group.push(areas[i + 1])
+    areas[i + 2] && group.push(areas[i + 2])
+
+    groups.push(group)
+  }
+
+  if (maxGroup > 0) {
+    return groups.slice(0, maxGroup)
+  }
+
+  return groups
+}
+
+const mapStatusToColor = (status: string): any => {
+  switch (status) {
+    case 'STARTING':
+      return 'blue'
+    case 'RUNNING':
+      return 'green'
+    case 'STOPPED':
+      return 'red'
+    default:
+      return undefined
+  }
+}
+
+const sortByCreationDateDesc = (arr: []): [] => {
+  return arr.sort((a: any, b: any) => b.createdAt - a.createdAt)
+}
+
+// Returns a function, that, as long as it continues to be invoked, will not
+// be triggered. The function will be called after it stops being called for
+// N milliseconds. If `immediate` is passed, trigger the function on the
+// leading edge, instead of the trailing.
+const debounce = (func: any, wait: number, immediate = false): any => {
+  let timeout: NodeJS.Timeout | null
+
+  return function (...args: any[]): any {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const context = this
+    const later = (): any => {
+      timeout = null
+
+      if (!immediate) {
+        func.apply(context, args)
+      }
+    }
+    const callNow = immediate && !timeout
+    clearTimeout(timeout as NodeJS.Timeout)
+    timeout = setTimeout(later, wait)
+
+    if (callNow) {
+      func.apply(context, args)
+    }
+  }
+}
+
+const generateGeofenceGEOJSON = (lat: number, long: number): any => {
+  return {
+    type: 'Feature',
+    properties: {},
+    geometry: {
+      type: 'Point',
+      coordinates: [long, lat],
+    },
+  }
+}
+
+const metersToPixelsAtMaxZoom = (meters: number, latitude: number): number => {
+  return meters / 0.075 / Math.cos((latitude * Math.PI) / 180)
+}
+
+const calculateDistanceByZoom = (zoom: number): number => {
+  const pixelMeterSizes = {
+    8: 610.984,
+    9: 305.492,
+    10: 152.746,
+    11: 76.373,
+    12: 38.187,
+    13: 19.093,
+    14: 9.547,
+    15: 4.773,
+    16: 2.387,
+    17: 1.193,
+    18: 0.596,
+    19: 0.298,
+    20: 0.149,
+  }
+  let pixelMeter = pixelMeterSizes[8]
+
+  if (zoom > 20) {
+    pixelMeter = pixelMeterSizes[20]
+  } else if (zoom > 8) {
+    pixelMeter = pixelMeterSizes[zoom as keyof typeof pixelMeterSizes]
+  }
+
+  return Math.floor(pixelMeter * 512)
+}
+
+const generatePolygonGEOJSON = (vertices: any[]): any => {
+  return {
+    type: 'Feature',
+    properties: {},
+    geometry: {
+      type: 'Polygon',
+      coordinates: [vertices.map((item) => [item.long, item.lat])],
+    },
+  }
+}
+
+const DEFAULT_AREAS = appVariables.DEFAULT_AREAS
+
+const getAreaCodeFromCoords = (lat: number, long: number): string | undefined => {
+  const idx = DEFAULT_AREAS.findIndex((q) => q.lat === lat && q.long === long)
+
+  if (idx > -1) {
+    return `Area ${idx + 1}`
+  }
+
+  return `Area ${Math.floor(Math.random() * (200 - 100 + 1)) + 100}`
+}
+
+const camelCaseToWords = (str: string): string => {
+  const match = str.match(/^[a-z]+|[A-Z][a-z]*/g)
+
+  return (match || [])
+    .map((x) => {
+      return x[0].toUpperCase() + x.substr(1).toLowerCase()
+    })
+    .join(' ')
+}
+
+export default {
+  mapStatusToColor,
+  groupAreas,
+  sortByCreationDateDesc,
+  debounce,
+  generateGeofenceGEOJSON,
+  metersToPixelsAtMaxZoom,
+  calculateDistanceByZoom,
+  generatePolygonGEOJSON,
+  DEFAULT_AREAS,
+  getAreaCodeFromCoords,
+  camelCaseToWords,
+}

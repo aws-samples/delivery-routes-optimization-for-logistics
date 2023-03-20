@@ -1,0 +1,22 @@
+{
+  "name": "@lambda/order-create-batch",
+  "version": "1.0.0",
+  "description": "",
+  "private": "true",
+  "main": "index.js",
+  "scripts": {
+    "mkdir": "mkdir -p ../../../../dist/@lambda",
+    "zipasset": "zip -FSrq ../../../../dist/$npm_package_name.zip *",
+    "csv-module": "cp -r ../../../../../../../node_modules/csv* ./node_modules/", 
+    "build": "yarn csv-module && yarn mkdir &&  yarn zipasset"
+  },
+  "author": "Amazon Web Services - Prototyping Team",
+  "contributors": [
+    "Pilmo Kang <pmkang@amazon.com>"
+  ],
+  "license": "MIT-0",
+  "dependencies": {
+    "csv": "^6.2.5",
+    "uuid": "^8.3.2"
+  }
+}

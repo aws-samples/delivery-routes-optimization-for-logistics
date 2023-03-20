@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>dev.aws.proto</groupId>
+    <artifactId>delivery-dispatch-parent</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+    <name>AWS nextday delivery dispatch route optimization prototype parent</name>
+    <description>
+        Dispatcher engine to solve delivery problems:
+         - Time-windowed Vehicle Routing Problem with additional warehouses
+    </description>
+    <licenses>
+        <license>
+            <name>Amazon Software License</name>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <properties>
+        <awssdk.version>2.17.209</awssdk.version>
+        <awssdk2-dynamo-json-helper.version>0.13.0</awssdk2-dynamo-json-helper.version>
+        <compiler-plugin.version>3.10.0</compiler-plugin.version>
+        <graphhopper-core.version>5.0</graphhopper-core.version>
+        <graphhopper-reader-osm.version>3.0-pre3</graphhopper-reader-osm.version>
+        <lombok.version>1.18.22</lombok.version>
+        <mapbox-sdk-geojson.version>5.8.0</mapbox-sdk-geojson.version>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <optaplanner.version>8.20.0.Final</optaplanner.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <picocli.version>4.6.3</picocli.version>
+        <quarkus.package.type>uber-jar</quarkus.package.type>
+        <quarkus.platform.version>2.8.0.Final</quarkus.platform.version>
+        <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
+    </properties>
+
+    <developers>
+        <developer>
+            <name>AWS Prototyping</name>
+            <organization>Amazon Web Services</organization>
+        </developer>
+    </developers>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-universe-bom</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.graphhopper</groupId>
+                <artifactId>graphhopper-reader-osm</artifactId>
+                <version>${graphhopper-reader-osm.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.graphhopper</groupId>
+                <artifactId>graphhopper-core</artifactId>
+                <version>${graphhopper-core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${awssdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/com.github.bijukunjummen/aws-sdk2-dynamo-json-helper -->
+            <dependency>
+                <groupId>com.github.bijukunjummen</groupId>
+                <artifactId>aws-sdk2-dynamo-json-helper</artifactId>
+                <version>${awssdk2-dynamo-json-helper.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.mapbox.mapboxsdk</groupId>
+                <artifactId>mapbox-sdk-geojson</artifactId>
+                <version>${mapbox-sdk-geojson.version}</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/info.picocli/picocli -->
+            <dependency>
+                <groupId>info.picocli</groupId>
+                <artifactId>picocli</artifactId>
+                <version>${picocli.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.optaplanner</groupId>
+                <artifactId>optaplanner-quarkus</artifactId>
+                <version>${optaplanner.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${compiler-plugin.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire-plugin.version}</version>
+            </dependency>
+
+
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- logging -->
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>commons-logging-jboss-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.slf4j</groupId>
+            <artifactId>slf4j-jboss-logmanager</artifactId>
+        </dependency>
+        <!-- /logging -->
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${compiler-plugin.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <release>${maven.compiler.target}</release>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire-plugin.version}</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>build:nextday</id>
+            <modules>
+                <module>core</module>
+                <module>apps/app-core</module>
+                <module>apps/nextday-delivery</module>
+            </modules>
+            <build>
+                <defaultGoal>clean package</defaultGoal>
+            </build>
+        </profile>
+        <profile>
+            <id>build:nextday:prod</id>
+            <properties>
+                <skipTests>true</skipTests>
+            </properties>
+            <modules>
+                <module>core</module>
+                <module>apps/app-core</module>
+                <module>apps/nextday-delivery</module>
+            </modules>
+            <build>
+                <defaultGoal>clean package</defaultGoal>
+            </build>
+        </profile>
+        <profile>
+            <id>quarkus:dev:nextday</id>
+            <modules>
+                <module>core</module>
+                <module>apps/app-core</module>
+                <module>apps/nextday-delivery</module>
+            </modules>
+            <build>
+                <defaultGoal>clean compile quarkus:dev</defaultGoal>
+            </build>
+        </profile>
+
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>core</module>
+                <module>apps</module>
+            </modules>
+        </profile>
+    </profiles>
+
+</project>

@@ -1,0 +1,17 @@
+{
+  "name": "delivery-dispatch",
+  "version": "1.0.0",
+  "private": "true",
+  "description": "Delivery dispatch route optimization",
+  "scripts": {
+    "mvn:package": "./mvnw  -Pbuild:nextday:prod",
+    "mvn:package:dev": "./mvnw  -Pbuild:nextday:dev",
+    "builddir:create": "mkdir -p build/nextday/config",
+    "builddir:rm": "rm -rf build/*",
+    "builddir:reset": "yarn builddir:rm && yarn builddir:create",
+    "prepdocker:nextday": "cp apps/nextday-delivery/target/*.jar build/nextday && cp -r apps/nextday-delivery/src/main/docker/* build/nextday && cp apps/nextday-delivery/src/main/resources/*.* build/nextday/config/ && cp data/seoul.distcache build/nextday/cache-res9.distcache",
+    "build": "yarn builddir:reset && yarn mvn:package && yarn prepdocker:nextday"
+  },
+  "author": "Amazon Web Services - Prototying",
+  "license": "MIT-0"
+}

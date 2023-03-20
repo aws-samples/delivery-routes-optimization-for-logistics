@@ -1,0 +1,54 @@
+<!--
+    Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+    SPDX-License-Identifier: MIT-0
+-->
+
+<solver>
+    <!--    To solve faster by saturating multiple CPU cores-->
+    <moveThreadCount>AUTO</moveThreadCount>
+
+    <solutionClass>dev.aws.proto.apps.nextday.planner.solution.DispatchSolution</solutionClass>
+    <entityClass>dev.aws.proto.apps.nextday.domain.planning.VisitOrVehicle</entityClass>
+    <entityClass>dev.aws.proto.apps.nextday.domain.planning.PlanningVisit</entityClass>
+
+    <scoreDirectorFactory>
+        <constraintProviderClass>
+            dev.aws.proto.apps.nextday.planner.solution.DispatchConstraintProvider
+        </constraintProviderClass>
+        <scoreDefinitionType>SIMPLE</scoreDefinitionType>
+        <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
+    </scoreDirectorFactory>
+    <constructionHeuristic>
+        <constructionHeuristicType>FIRST_FIT</constructionHeuristicType>
+    </constructionHeuristic>
+
+    <!-- Terminate solver after N seconds -->
+    <termination>
+        <secondsSpentLimit>1500</secondsSpentLimit>
+    </termination>
+
+    <localSearch>
+        <unionMoveSelector>
+            <changeMoveSelector/>
+            <swapMoveSelector/>
+            <subChainChangeMoveSelector>
+                <selectReversingMoveToo>true</selectReversingMoveToo>
+            </subChainChangeMoveSelector>
+            <subChainSwapMoveSelector>
+                <selectReversingMoveToo>true</selectReversingMoveToo>
+            </subChainSwapMoveSelector>
+        </unionMoveSelector>
+        <acceptor>
+            <lateAcceptanceSize>400</lateAcceptanceSize>
+        </acceptor>
+        <forager>
+            <acceptedCountLimit>4</acceptedCountLimit>
+        </forager>
+
+        <termination>
+            <bestScoreFeasible>true</bestScoreFeasible>
+            <secondsSpentLimit>150</secondsSpentLimit>
+            <unimprovedSecondsSpentLimit>25</unimprovedSecondsSpentLimit>
+        </termination>
+    </localSearch>
+</solver>

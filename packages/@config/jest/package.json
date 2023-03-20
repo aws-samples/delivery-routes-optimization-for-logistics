@@ -1,0 +1,16 @@
+{
+  "name": "@config/jest",
+  "version": "0.0.1",
+  "description": "Jest config",
+  "main": "index.js",
+  "author": "Amazon Web Services - ASEAN Prototying <aws-asean-sa-prototyping@amazon.com>",
+  "contributors": [
+    "Greg Varga <gergelyv@amazon.com>",
+    "Jeremy Jonas <jerjonas@amazon.com>"
+  ],
+  "license": "MIT-0",
+  "dependencies": {
+    "jest": "^27.4.3"
+  },
+  "private": true
+}

@@ -1,0 +1,20 @@
+{
+  "name": "@config/commitlint",
+  "version": "0.0.1",
+  "description": "Config for linting git commits",
+  "main": "index.js",
+  "author": "Amazon Web Services - ASEAN Prototying <aws-asean-sa-prototyping@amazon.com>",
+  "contributors": [
+    "Greg Varga <gergelyv@amazon.com>",
+    "Jeremy Jonas <jerjonas@amazon.com>"
+  ],
+  "license": "MIT-0",
+  "private": true,
+  "dependencies": {
+    "@commitlint/cli": "^15.0.0",
+    "@commitlint/config-conventional": "^15.0.0",
+    "commitizen": "^4.2.4",
+    "cz-lerna-changelog": "^2.0.3",
+    "husky": "^7.0.4"
+  }
+}

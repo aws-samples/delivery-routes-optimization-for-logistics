@@ -1,0 +1,33 @@
+{
+  "name": "@config/hygen",
+  "description": "Hygen tool related stuff",
+  "version": "0.1.4",
+  "license": "MIT-0",
+  "author": "Amazon Web Services - ASEAN Prototying <aws-asean-sa-prototyping@amazon.com>",
+  "contributors": [
+    "Greg Varga <gergelyv@amazon.com>",
+    "Jeremy Jonas <jerjonas@amazon.com>"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/index.module.js",
+  "typings": "dist/index.d.ts",
+  "directories": {
+    "lib": "dist",
+    "test": "test"
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc --project tsconfig.json",
+    "watch": "yarn build --watch",
+    "test": "jest"
+  },
+  "dependencies": {
+    "enquirer": "^2.3.6",
+    "semver": "^7.3.5"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^16.11.10",
+    "@types/semver": "^7.3.9"
+  }
+}
