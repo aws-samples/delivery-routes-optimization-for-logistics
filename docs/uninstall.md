@@ -14,7 +14,7 @@ This will remove your stacks.
 After the stack deletion has completed, delete the Amazon S3 bucket.
 
 1. Sign in to the Amazon S3 console.
-1. Select the buckets that start with the namespace you set in the configuration before deployment. For example, if you set the namespace to `apspe`, look for a bucket named `apspe-xxx`.
+1. Select the buckets that start with the namespace you set in the configuration before deployment. For example, if you set the namespace to `devproto`, look for a bucket named `devproto-xxx`.
 1. Back up the data in that bucket that you want to keep, such as by copying the data to another S3 bucket where you keep all your backups.
 1. Choose Empty.
 1. Choose Delete.
