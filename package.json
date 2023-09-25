@@ -1,5 +1,5 @@
 {
-  "name": "optimize-delivery-route-with-order-dispatching-sample",
+  "name": "@aws-samples/optimize-delivery-route-with-order-dispatching-sample",
   "version": "1.0.0",
   "description": "Delivery route optimization app with order dispatching",
   "contributors": [
