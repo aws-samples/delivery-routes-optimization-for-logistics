@@ -1,5 +1,5 @@
 {
-  "name": "@apps/infra",
+  "name": "@aws-samples/infra",
   "version": "1.0.0",
   "description": "Route Optimization App - Infra",
   "author": "Amazon Web Services - Prototyping Team",

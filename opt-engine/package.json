@@ -1,5 +1,5 @@
 {
-  "name": "delivery-dispatch",
+  "name": "@aws-samples/delivery-dispatch",
   "version": "1.0.0",
   "private": "true",
   "description": "Delivery dispatch route optimization",
