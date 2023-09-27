@@ -1,5 +1,5 @@
 {
-  "name": "@config/types",
+  "name": "@aws-samples/types",
   "version": "0.0.1",
   "description": "Global types def",
   "main": "index.js",

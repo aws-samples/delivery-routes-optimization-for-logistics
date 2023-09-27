@@ -1,5 +1,5 @@
 {
-  "name": "@infra/ecs-task",
+  "name": "@aws-samples/ecs-task",
   "description": "ECS task definition cunstruct",
   "version": "0.0.0-alpha.0",
   "license": "MIT-0",
@@ -25,6 +25,6 @@
     "typescript": "^4.5.5"
   },
   "dependencies": {
-    "@infra/common": "^0.0.0-alpha.0"
+    "@aws-samples/common": "^0.0.0-alpha.0"
   }
 }

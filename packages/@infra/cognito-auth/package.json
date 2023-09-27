@@ -1,5 +1,5 @@
 {
-  "name": "@infra/cognito-auth",
+  "name": "@aws-samples/cognito-auth",
   "description": "System wide a8n",
   "version": "0.0.0-alpha.0",
   "license": "MIT-0",
@@ -22,7 +22,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@infra/common": "^0.0.0-alpha.0"
+    "@aws-samples/common": "^0.0.0-alpha.0"
   },
   "peerDependencies": {
     "aws-cdk-lib": "^2.59.0",

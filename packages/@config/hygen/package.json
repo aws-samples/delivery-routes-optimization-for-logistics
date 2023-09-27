@@ -1,5 +1,5 @@
 {
-  "name": "@config/hygen",
+  "name": "@aws-samples/hygen",
   "description": "Hygen tool related stuff",
   "version": "0.1.4",
   "license": "MIT-0",

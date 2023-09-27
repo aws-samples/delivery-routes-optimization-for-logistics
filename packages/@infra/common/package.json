@@ -1,5 +1,5 @@
 {
-  "name": "@infra/common",
+  "name": "@aws-samples/common",
   "description": "Common utility functions and consts",
   "version": "0.0.0-alpha.0",
   "license": "MIT-0",

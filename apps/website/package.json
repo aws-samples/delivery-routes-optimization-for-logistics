@@ -70,7 +70,7 @@
     ]
   },
   "devDependencies": {
-    "@config/eslint": "0.0.1",
+    "@aws-samples/eslint": "0.0.1",
     "@types/lodash": "^4.14.178",
     "@types/mapbox-gl": "^2.1.1",
     "@types/mapbox__polyline": "^1.0.2",

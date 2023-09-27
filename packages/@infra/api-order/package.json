@@ -1,5 +1,5 @@
 {
-  "name": "@infra/api-order",
+  "name": "@aws-samples/api-order",
   "description": "Rest API for the upload order",
   "version": "0.0.0-alpha.0",
   "license": "MIT-0",
@@ -25,7 +25,7 @@
     "typescript": "^4.5.5"
   },
   "dependencies": {
-    "@infra/common": "^0.0.0-alpha.0",
+    "@aws-samples/common": "^0.0.0-alpha.0",
     "http-method-enum": "^1.0.0",
     "uuid": "^8.3.2"
   }

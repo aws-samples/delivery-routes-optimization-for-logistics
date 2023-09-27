@@ -1,5 +1,5 @@
 {
-  "name": "@config/commitlint",
+  "name": "@aws-samples/commitlint",
   "version": "0.0.1",
   "description": "Config for linting git commits",
   "main": "index.js",

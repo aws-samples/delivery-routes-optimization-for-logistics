@@ -1,5 +1,5 @@
 {
-  "name": "@infra/api-web",
+  "name": "@aws-samples/api-web",
   "description": "Rest API for the web app",
   "version": "0.0.0-alpha.0",
   "license": "MIT-0",
@@ -27,6 +27,6 @@
   },
   "dependencies": {
     "http-method-enum": "^1.0.0",
-    "@infra/common": "^0.0.0-alpha.0"
+    "@aws-samples/common": "^0.0.0-alpha.0"
   }
 }

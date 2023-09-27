@@ -1,5 +1,5 @@
 {
-  "name": "@config/jest",
+  "name": "@aws-samples/jest",
   "version": "0.0.1",
   "description": "Jest config",
   "main": "index.js",
