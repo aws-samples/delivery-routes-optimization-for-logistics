@@ -6,11 +6,11 @@
 import { Construct } from 'constructs'
 import * as core from 'aws-cdk-lib'
 import { aws_s3 as s3, aws_ssm as ssm, aws_ec2 as ec2, CfnOutput } from 'aws-cdk-lib'
-import { setNamespace } from '@infra/common'
-import { DataStorage } from '@infra/data-storage'
-import { IdentityStack } from '@infra/cognito-auth'
-import { WebsiteHosting } from '@infra/web-hosting'
-import { VpcPersistent } from '@infra/networking'
+import { setNamespace } from '@aws-samples/common'
+import { DataStorage } from '@aws-samples/data-storage'
+import { IdentityStack } from '@aws-samples/cognito-auth'
+import { WebsiteHosting } from '@aws-samples/web-hosting'
+import { VpcPersistent } from '@aws-samples/networking'
 
 export interface PersistentBackendStackProps extends core.StackProps {
   readonly namespace: string

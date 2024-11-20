@@ -5,7 +5,7 @@
 
 import { VpcPersistent } from '../src'
 
-describe('@infra/networking', () => {
+describe('@aws-samples/networking', () => {
   test('module exists', () => {
     expect(VpcPersistent).toBeDefined()
   })

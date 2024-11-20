@@ -5,7 +5,7 @@
 
 import { Construct } from 'constructs'
 import { aws_apigateway as apigw, aws_cognito as cognito, aws_dynamodb as ddb, aws_s3 as s3 } from 'aws-cdk-lib'
-import { namespaced, common_apigw, common_lambda } from '@infra/common'
+import { namespaced, common_apigw, common_lambda } from '@aws-samples/common'
 import { CustomerLocationManagerLambda } from './CustomerLocationManager'
 import { WarehouseManagerLambda } from './WarehouseManager'
 import { DeliveryJobQueryLambda } from './DeliveryJobsQuery'

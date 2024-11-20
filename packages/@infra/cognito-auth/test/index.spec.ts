@@ -5,7 +5,7 @@
 
 import { IdentityStack } from '../src'
 
-describe('@infra/cognito-auth', () => {
+describe('@aws-samples/cognito-auth', () => {
   test('module exists', () => {
     expect(IdentityStack).toBeDefined()
   })

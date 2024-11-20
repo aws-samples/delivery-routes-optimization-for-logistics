@@ -5,7 +5,7 @@
 
 import { EcsEc2Task } from '../src'
 
-describe('@infra/ecs-task', () => {
+describe('@aws-samples/ecs-task', () => {
   test('module exists', () => {
     expect(EcsEc2Task).toBeDefined()
   })

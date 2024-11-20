@@ -5,7 +5,7 @@
 
 import { Construct } from 'constructs'
 import { aws_s3 as s3, aws_iam as iam, custom_resources as cr } from 'aws-cdk-lib'
-import { namespaced } from '@infra/common'
+import { namespaced } from '@aws-samples/common'
 
 /**
  * Properties for creating App variables

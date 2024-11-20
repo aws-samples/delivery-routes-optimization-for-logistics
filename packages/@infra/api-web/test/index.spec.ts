@@ -5,7 +5,7 @@
 
 import { ApiWeb } from '../src'
 
-describe('@infra/api-web', () => {
+describe('@aws-samples/api-web', () => {
   test('module exists', () => {
     expect(ApiWeb).toBeDefined()
   })

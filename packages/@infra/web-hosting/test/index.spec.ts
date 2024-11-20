@@ -5,7 +5,7 @@
 
 import { WebsiteHosting, HostingDeployment, AppVariables } from '../src'
 
-describe('@infra/web-hosting', () => {
+describe('@aws-samples/web-hosting', () => {
   test('module exists - WebsiteHosting', () => {
     expect(WebsiteHosting).toBeDefined()
   })

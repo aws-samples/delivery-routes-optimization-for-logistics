@@ -5,7 +5,7 @@
 
 import { ApiOrder } from '../src'
 
-describe('@infra/api-order', () => {
+describe('@aws-samples/api-order', () => {
   test('module exists', () => {
     expect(ApiOrder).toBeDefined()
   })

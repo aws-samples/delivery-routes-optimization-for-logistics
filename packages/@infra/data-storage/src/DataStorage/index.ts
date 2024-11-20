@@ -6,7 +6,7 @@
 import { Construct } from 'constructs'
 import * as core from 'aws-cdk-lib'
 import { aws_dynamodb as ddb, aws_s3 as s3, aws_ssm as ssm } from 'aws-cdk-lib'
-import { namespaced, namespacedBucket } from '@infra/common'
+import { namespaced, namespacedBucket } from '@aws-samples/common'
 
 export interface DataStorageProps extends core.NestedStackProps {
   readonly parameterStoreKeys: Record<string, string>

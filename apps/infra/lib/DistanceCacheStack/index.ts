@@ -7,9 +7,9 @@ import * as core from 'aws-cdk-lib'
 import * as path from 'path'
 import { aws_ssm as ssm, aws_dynamodb, aws_s3, aws_ec2, aws_iam as iam } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
-import { setNamespace, common_iam } from '@infra/common'
+import { setNamespace, common_iam } from '@aws-samples/common'
 import { sync as findup } from 'find-up'
-import { EcsEc2Task } from '@infra/ecs-task'
+import { EcsEc2Task } from '@aws-samples/ecs-task'
 
 export interface DistanceCacheStackProps extends core.StackProps {
   readonly namespace: string

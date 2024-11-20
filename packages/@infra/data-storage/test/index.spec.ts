@@ -5,7 +5,7 @@
 
 import { DataStorage } from '../src'
 
-describe('@infra/data-storage', () => {
+describe('@aws-samples/data-storage', () => {
   test('module exists', () => {
     expect(DataStorage).toBeDefined()
   })

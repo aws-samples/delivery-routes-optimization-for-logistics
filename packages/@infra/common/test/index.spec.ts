@@ -5,7 +5,7 @@
 
 import * as common from '../src'
 
-describe('@infra/common', () => {
+describe('@aws-samples/common', () => {
   test('module exists', () => {
     expect(common).toBeDefined()
   })

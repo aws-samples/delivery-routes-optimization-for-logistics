@@ -8,9 +8,9 @@ import * as core from 'aws-cdk-lib'
 import { aws_s3 as s3 } from 'aws-cdk-lib'
 import { sync as findUp } from 'find-up'
 import * as path from 'path'
-import { setNamespace } from '@infra/common'
-import { ApiWeb } from '@infra/api-web'
-import { AppVariables, HostingDeployment } from '@infra/web-hosting'
+import { setNamespace } from '@aws-samples/common'
+import { ApiWeb } from '@aws-samples/api-web'
+import { AppVariables, HostingDeployment } from '@aws-samples/web-hosting'
 import { PersistentBackendStack } from '../PersistentStack'
 
 export interface BackendStackProps extends core.StackProps {

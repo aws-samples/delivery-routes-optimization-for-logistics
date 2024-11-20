@@ -5,7 +5,7 @@
 
 import { Construct } from 'constructs'
 import { Tags, aws_ec2 as ec2 } from 'aws-cdk-lib'
-import { namespaced, retainResource } from '@infra/common'
+import { namespaced, retainResource } from '@aws-samples/common'
 
 export interface VpcPersistentProps {
   readonly vpcCidr: string

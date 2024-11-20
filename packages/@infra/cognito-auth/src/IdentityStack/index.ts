@@ -6,7 +6,7 @@
 import { Construct } from 'constructs'
 import * as core from 'aws-cdk-lib'
 import { aws_cognito as cognito, aws_iam as iam } from 'aws-cdk-lib'
-import { namespaced } from '@infra/common'
+import { namespaced } from '@aws-samples/common'
 
 const COGNITO_IDENTITY_PRINCIPLE = 'cognito-identity.amazonaws.com'
 

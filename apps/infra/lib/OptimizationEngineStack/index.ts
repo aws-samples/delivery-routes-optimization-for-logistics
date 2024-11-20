@@ -14,9 +14,9 @@ import {
   StackProps,
 } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
-import { setNamespace, common_iam } from '@infra/common'
+import { setNamespace, common_iam } from '@aws-samples/common'
 import { sync as findup } from 'find-up'
-import { EcsEc2Task } from '@infra/ecs-task'
+import { EcsEc2Task } from '@aws-samples/ecs-task'
 
 export interface OptimizationEngineStackProps extends StackProps {
   readonly namespace: string

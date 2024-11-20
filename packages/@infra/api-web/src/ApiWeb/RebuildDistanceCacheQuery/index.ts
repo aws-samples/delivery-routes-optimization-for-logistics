@@ -6,7 +6,7 @@
 import { Construct } from 'constructs'
 import * as core from 'aws-cdk-lib'
 import { aws_lambda as lambda, aws_s3 as s3, aws_dynamodb as ddb } from 'aws-cdk-lib'
-import { namespaced, common_lambda, common_iam } from '@infra/common'
+import { namespaced, common_lambda, common_iam } from '@aws-samples/common'
 
 interface Environment extends common_lambda.DeclaredLambdaEnvironment {
   KEY_CLUSTER: string

@@ -5,7 +5,7 @@
 
 import { Construct } from 'constructs'
 import { aws_s3 as s3, aws_iam as iam, aws_cloudfront as cloudfront } from 'aws-cdk-lib'
-import { namespacedBucket, retainResource } from '@infra/common'
+import { namespacedBucket, retainResource } from '@aws-samples/common'
 
 /**
  * Properties for creating website hosting construct

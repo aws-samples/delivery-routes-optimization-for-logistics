@@ -8,8 +8,8 @@ import * as core from 'aws-cdk-lib'
 import { aws_s3 as s3, aws_dynamodb as ddb, aws_ssm as ssm } from 'aws-cdk-lib'
 import { sync as findUp } from 'find-up'
 import * as path from 'path'
-import { setNamespace } from '@infra/common'
-import { ApiOrder } from '@infra/api-order'
+import { setNamespace } from '@aws-samples/common'
+import { ApiOrder } from '@aws-samples/api-order'
 
 export interface OrderUploadStackProps extends core.StackProps {
   readonly namespace: string

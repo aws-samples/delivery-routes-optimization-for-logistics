@@ -12,7 +12,7 @@ import {
   aws_ssm as ssm,
   aws_lambda_event_sources as lambda_event,
 } from 'aws-cdk-lib'
-import { namespaced, namespacedBucket, common_apigw, common_lambda } from '@infra/common'
+import { namespaced, namespacedBucket, common_apigw, common_lambda } from '@aws-samples/common'
 import { HTTPMethod } from 'http-method-enum'
 import { GetS3PresignedUrlLambda } from './GetS3PresignedUrl'
 import { CreateOrderBatchLambda } from './CreateOrderBatch'

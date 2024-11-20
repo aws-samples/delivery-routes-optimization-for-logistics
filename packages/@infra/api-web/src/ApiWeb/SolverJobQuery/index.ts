@@ -6,7 +6,7 @@
 import { Construct } from 'constructs'
 import * as core from 'aws-cdk-lib'
 import { aws_dynamodb as ddb, aws_lambda as lambda } from 'aws-cdk-lib'
-import { namespaced, common_lambda, common_iam } from '@infra/common'
+import { namespaced, common_lambda, common_iam } from '@aws-samples/common'
 
 interface Environment extends common_lambda.DeclaredLambdaEnvironment {
   DDB_TABLE: string

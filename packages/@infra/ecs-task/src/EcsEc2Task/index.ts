@@ -14,7 +14,7 @@ import {
   aws_iam as iam,
   aws_logs as logs,
 } from 'aws-cdk-lib'
-import { namespaced, regionalNamespaced } from '@infra/common'
+import { namespaced, regionalNamespaced } from '@aws-samples/common'
 
 export interface EcsEc2TaskProps {
   readonly vpc: ec2.IVpc
