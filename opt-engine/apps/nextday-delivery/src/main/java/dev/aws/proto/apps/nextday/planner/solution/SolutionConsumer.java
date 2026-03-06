@@ -129,7 +129,7 @@ public class SolutionConsumer {
             points.add(vehicle.getLocation().getCoordinate());
 
             int totalLoads = 0;
-            int totalDistance = 0;
+            long totalDistance = 0L;
             VisitOrVehicle currVisit = vehicle;
             PlanningVisit nextVisit = vehicle.getNextPlanningVisit();
             while (nextVisit != null) {
