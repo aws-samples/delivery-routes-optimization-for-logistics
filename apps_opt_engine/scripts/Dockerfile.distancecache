@@ -1,0 +1,13 @@
+FROM amazoncorretto:21 AS distancecache
+WORKDIR /root
+
+COPY distance-cache-util.jar ./distance-cache-util.jar
+
+RUN mkdir -p .graphhopper/graphhopper .graphhopper/openstreetmap
+# The OSM file is expected to be named `mapfile.osm.pbf` for the CLI defaults
+COPY mapfile.osm.pbf ./.graphhopper/openstreetmap/mapfile.osm.pbf
+
+RUN echo 'export $(strings /proc/1/environ | grep AWS_CONTAINER_CREDENTIALS_RELATIVE_URI)' >> /root/.profile
+
+ENTRYPOINT ["/bin/sh", "-c"]
+CMD ["java -jar distance-cache-util.jar build-lat-long --location=ddb --loctablename=$LOCATION_TABLE --tablename=$CACHE_TABLE --bucketname=$BUCKET_NAME --warehouse=$WAREHOUSE_CODE -p=s3"]

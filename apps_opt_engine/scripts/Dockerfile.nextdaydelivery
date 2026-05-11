@@ -1,0 +1,14 @@
+FROM amazoncorretto:21 AS nextdaydelivery
+WORKDIR /root
+
+COPY delivery-dispatch.jar ./delivery-dispatch.jar
+COPY solver-config.xml ./solver-config.xml
+
+# OSM map file is supplied by the build context (copied by build_opt_engine.sh).
+RUN mkdir -p .graphhopper/graphhopper .graphhopper/openstreetmap
+COPY south-korea-latest.osm.pbf ./.graphhopper/openstreetmap/south-korea-latest.osm.pbf
+
+RUN echo 'export $(strings /proc/1/environ | grep AWS_CONTAINER_CREDENTIALS_RELATIVE_URI)' >> /root/.profile
+
+ENTRYPOINT ["/bin/sh", "-c"]
+CMD ["java -jar -Dorder-date=$ORDER_DATE -Dwarehouse-code=$WAREHOUSE_CODE delivery-dispatch.jar"]

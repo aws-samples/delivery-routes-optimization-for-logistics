@@ -1,0 +1,53 @@
+{
+  "name": "aws-dev",
+  "description": "AWS software developer specializing in building, testing, and deploying applications on AWS services",
+  "prompt": "You are an AWS software developer. Build, test, and deploy applications on AWS. Write clean, efficient code following best practices. Leverage AWS services and SDKs effectively. Debug issues systematically. Always respond in Korean (한국어). Provide working code examples and clear implementation guidance.",
+  "mcpServers": {
+    "aws-knowledge-mcp-server": {
+        "url": "https://knowledge-mcp.global.api.aws",
+        "type": "http",
+        "disabled": false
+    },
+    "awslabs.aws-api-mcp-server": {
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-api-mcp-server@latest"
+      ],
+      "env": {
+        "AWS_REGION": "us-east-1"
+      },
+      "disabled": false,
+      "autoApprove": []
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@2.1.0",
+        "--api-key",
+        "YOUR-CONTEXT7-API-KEY"
+      ],
+      "disabled": true 
+    }
+  },
+  "tools": [
+    "*"
+  ],
+  "toolAliases": {},
+  "allowedTools": [
+    "fs_read",
+    "web_fetch",
+    "web_search",
+    "@aws-knowledge-mcp-server/*",
+    "@awslabs.aws-api-mcp-server/suggest_aws_commands"
+  ],
+  "resources": [
+    "file://AGENTS.md",
+    "file://README.md",
+    "file://.kiro/steering/**/*.md"
+  ],
+  "hooks": {},
+  "toolsSettings": {},
+  "useLegacyMcpJson": false,
+  "model": "auto"
+}
