@@ -1,0 +1,13 @@
+node_modules/
+cdk.out/
+cdk.context.json
+dist/
+reports/
+*.log
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,406 @@
+# Implementation Plan — Infra Migration
+
+## Overview
+
+본 태스크 목록은 `apps/infra` (monorepo) 를 `apps_infra/` 단일 pnpm 패키지 CDK 앱으로 재작성하는 작업을
+Design §2.15 의 **점진 체크포인트 S1 ~ S10** 구조로 나눈 것이다. 각 단계는 이전 단계의 산출물 위에
+쌓이며, 마지막 단계에서 `pnpm lint && pnpm test && pnpm synth` 가 경고 0 으로 통과해야 완료된다.
+
+**규칙**
+- `*` 가 붙은 sub-task 는 선택적(테스트 중심) 항목이며 MVP 를 빠르게 맞출 때 건너뛸 수 있다. 상위 태스크(top-level)는 절대 `*` 처리하지 않는다.
+- 모든 코드는 **TypeScript 5.6 / Node.js 24 / CDK 2.252** 로 작성한다.
+- 모든 파일 경로는 `apps_infra/` 기준 상대 경로로 표기한다.
+- 각 Lambda 핸들러는 `lambda/` 에 위치하며 `AppNodejsFunction` 을 통해서만 생성된다.
+
+---
+
+## Tasks
+
+- [x] 1. S1 — 프로젝트 스캐폴딩 (pnpm 단일 패키지)
+  - [x] 1.1 루트 매니페스트 및 도구 설정 파일 생성
+    - 파일: `package.json`, `pnpm-workspace.yaml`(없음 — 단일 패키지), `.gitignore`, `.prettierrc`, `.eslintrc.cjs`, `README.md` (placeholder)
+    - `package.json` 의존성 / scripts 는 Design §2.1 과 완전히 일치시킨다 (aws-cdk-lib 2.252.0, constructs ^10.4.2, typescript ^5.6.3, jest ^29.7, ts-jest ^29.2, esbuild ^0.24, zod ^3.23, yaml ^2.5, dotenv ^16.4)
+    - `engines: { node: ">=20 <25", pnpm: ">=9" }`, `packageManager: "pnpm@9.12.0"` 명시
+    - `.gitignore` 는 Design §2.13 의 항목(`node_modules/`, `cdk.out/`, `dist/`, `reports/`, `.env`, `.env.*`, `!.env.example`) 포함
+    - `.eslintrc.cjs` 는 Design §2.12 의 `@typescript-eslint/recommended` + `prettier` 조합 사용 (`@config/*` 프리셋 의존 금지)
+    - **Requirements:** 1.1, 1.2, 1.3, 1.4, 13.1, 13.6, 16.5
+  - [x] 1.2 TypeScript / CDK / Jest 설정 파일 생성
+    - 파일: `tsconfig.json`, `lambda/tsconfig.json`, `cdk.json`, `cdk.context.json`, `jest.config.ts`
+    - `tsconfig.json` 는 Design §2.2 를 그대로 적용 (`strict`, `noImplicitAny`, `include: [bin, src, test]`, `exclude: [lambda, cdk.out, dist]`)
+    - `lambda/tsconfig.json` 은 `noEmit: true`, `types: [node, aws-lambda]`
+    - `cdk.json` 은 Design §2.3 feature-flag 문맥(특히 `newStyleStackSynthesis`, `serverAccessLogsUseBucketPolicy`, `minimizePolicies`) 포함
+    - `cdk.context.json` 내용은 정확히 `{}` (빈 객체)
+    - `jest.config.ts` 는 Design §2.11 의 `preset: 'ts-jest'`, `testMatch: ['<rootDir>/test/**/*.spec.ts']`
+    - **Requirements:** 1.6, 1.7, 1.8, 1.9, 12.1, 14.8, 16.7
+  - [x] 1.3 엔트리포인트 skeleton `bin/app.ts` 작성 (빈 App)
+    - 파일: `bin/app.ts`
+    - SPDX/Copyright 헤더 포함, `new App()` 만 호출하는 placeholder
+    - 이후 S4 ~ S8 에서 각 스택 인스턴스를 순차적으로 추가
+    - **Requirements:** 4.1, 16.4
+  - [x] 1.4 설치 및 빈 synth 검증 (스모크)
+    - 명령: `pnpm install` → `pnpm build` → `pnpm synth`
+    - 기대: 종료 코드 0, `cdk.out/` 에 최소 1개 스택 (`PlaceholderStack`)
+    - CDK CLI ≥2.175 는 0-stack App 에서 `This app contains no stacks` 로 종료 코드 1 을 반환한다. 이 가드레일을 회피하기 위해 `bin/app.ts` 에 임시 `PlaceholderStack` 을 추가한다. **이 스택은 태스크 4.5 에서 `PersistentBackendStack` 인스턴스화 시 반드시 제거한다** (`bin/app.ts` 의 TODO(S4) 참조).
+    - 경고 메시지 로그 캡처 후 남아있는 deprecation 이 있다면 조치(없어야 함)
+    - **Requirements:** 1.10, 15.2
+  - [x] 1.5 `package.json` 금지 의존성 property 테스트
+    - 파일: `test/meta/package-json.spec.ts`
+    - **Property 9: No forbidden dependencies**
+    - **Validates: Requirements 1.4, 3.11**
+    - `/^(@aws-samples\/|@infra\/|@config\/|lerna$|yarn$|config$|find-up$|cdk-constants$|http-method-enum$)/` 에 매칭되는 키가 `dependencies` / `devDependencies` 에 없음을 검증
+
+- [x] 2. S2 — Config 로더 (Zod + YAML + dotenv)
+  - [x] 2.1 Zod 스키마 정의
+    - 파일: `src/config/schema.ts`
+    - Design §2.5 의 `EnvSchema`, `InstanceOptionsSchema`, `ParameterStoreKeysSchema`, `RootConfigSchema` 구현
+    - `RootConfig` 타입 export (`z.infer<typeof RootConfigSchema>`)
+    - `assets` 필드의 기본값(`stub/website`, `stub/opt-engine/distancecache-util`, `stub/opt-engine/nextday-delivery`) 명시
+    - **Requirements:** 2.1, 2.2, 2.3, 2.4, 2.5
+  - [x] 2.2 로더 구현 및 env override
+    - 파일: `src/config/loader.ts`, `src/config/index.ts`
+    - `process.cwd()` 기준 `config/default.yml` 읽기, `dotenv.config({ override: false })`
+    - `CDK_DEFAULT_ACCOUNT`, `CDK_DEFAULT_REGION`, `MAPBOX_TOKEN`, `ADMINISTRATOR_EMAIL` 환경변수가 있을 때 스키마 파싱 전에 raw 객체에 주입
+    - 검증 실패 시 `ZodError` 그대로 throw
+    - **Requirements:** 2.6, 2.7, 2.8, 2.9, 2.10, 2.11, 2.12
+  - [x] 2.3 `config/default.yml` 작성
+    - 파일: `config/default.yml`
+    - Design §2.14 의 YAML 전체를 그 wwwwwww대로 작성 (namespace 는 `devproto`, MapBox token 은 `REPLACE_ME`, administrator email 은 placeholder)
+    - **Requirements:** 2.13
+  - [x] 2.4 Config 스키마 round-trip / 거부 property 테스트
+    - 파일: `test/config/schema.spec.ts`
+    - **Property 1: Config schema round-trip validity** — 유효 샘플 → YAML.stringify → parse → 재검증 동치
+    - **Property 2: Config schema rejects invalid inputs** — `account` 11자리, SSM key 에 `/` 없음, 필수 필드 누락, email 형식 오류에 대해 `ZodError` throw
+    - 추가 예제: `CDK_DEFAULT_ACCOUNT` override 동작, `assets.*` 기본값 적용 확인
+    - **Validates: Requirements 2.2, 2.3, 2.4, 2.5, 2.6, 2.12**
+
+- [x] 3. S3 — 공용 Constructs (namespace / AppNodejsFunction / PolicyStatements)
+  - [x] 3.1 상수 중앙화
+    - 파일: `src/constants.ts`
+    - Design §2.7 의 `LAMBDA_RUNTIME = Runtime.NODEJS_24_X`, `LAMBDA_DEFAULTS`, `STACK_IDS` 정의
+    - 다른 소스 파일이 이 이름들을 재정의하지 않도록 export 만 함
+    - **Requirements:** 10.2, 14.3, 16.3
+  - [x] 3.2 Namespace helper
+    - 파일: `src/constructs/common/namespace.ts`
+    - `setNamespace`, `namespaced`, `namespacedBucket`(lowercase), `regionalNamespaced` 구현
+    - context key `"apps-infra:namespace"` 사용
+    - **Requirements:** 3.1, 3.2, 3.3, 3.4
+  - [x] 3.3 PolicyStatements helper
+    - 파일: `src/constructs/common/policies.ts`
+    - Design §2.9 의 `ssm.readParams`, `s3.readBucket`, `s3.writeBucket`, `ddb.readDDBTable`, `ddb.updateDDBTable`, `ddb.batchWriteDDBTable` 구현
+    - `ddb.readDDBTable` 의 resources 에 `${arn}/index/*` 포함
+    - 와일드카드 `Resource: "*"` 사용 금지 (SSM 파라미터 경로 제외)
+    - **Requirements:** 3.9, 3.10, 16.1
+  - [x] 3.4 `AppNodejsFunction` 팩토리
+    - 파일: `src/constructs/common/NodejsFn.ts`
+    - Design §2.8 의 `AppNodejsFunctionProps` / `LAMBDA_ROOT` / `AppNodejsFunction` 구현
+    - 기본값: `runtime = NODEJS_24_X`, `memorySize = 256`, `timeout = 10s`, bundling `{ target: 'node24', minify: true, sourceMap: true, externalModules: ['@aws-sdk/*'] }`
+    - `entry = path.join(LAMBDA_ROOT, props.handlerPath)`
+    - **Requirements:** 3.5, 3.6, 3.7, 3.8, 10.3
+  - [x] 3.5 공용 index barrel
+    - 파일: `src/constructs/common/index.ts`
+    - 위 4개 모듈 re-export
+    - **Requirements:** 3.1, 3.5
+  - [x] 3.6 Namespace helper 단위 테스트
+    - 파일: `test/constructs/common/namespace.spec.ts`
+    - context 설정 / 미설정 경우, lowercase 처리, region prefix 확인
+    - **Validates: Requirements 3.2, 3.3, 3.4**
+  - [x] 3.7 PolicyStatements 단위 테스트
+    - 파일: `test/constructs/common/policies.spec.ts`
+    - 각 헬퍼가 올바른 actions/resources 를 포함하는지 검증
+    - **Validates: Requirements 3.9, 3.10, 16.1**
+  - [x] 3.8 AppNodejsFunction property 테스트 (Lambda runtime 불변식)
+    - 파일: `test/constructs/common/NodejsFn.spec.ts`
+    - **Property 4: Lambda runtime invariant** — 테스트 스택에서 `AppNodejsFunction` 을 여러 개 생성한 뒤 `Template.fromStack` 의 모든 `AWS::Lambda::Function` 이 `Runtime: "nodejs24.x"` 임을 확인
+    - **Property 7: Handler entry file existence** — 존재하지 않는 `handlerPath` 를 넘기면 `fs.existsSync` 가 false 이고 CDK synth 시 에러가 나는 것을 확인(fixture 사용)
+    - **Validates: Requirements 3.6, 3.7, 3.8, 10.3, 12.5**
+
+- [x] 4. S4 — PersistentBackendStack (networking / data-storage / cognito-auth / web-hosting)
+  - [x] 4.1 Networking construct (`VpcPersistent`)
+    - 파일: `src/constructs/networking/VpcPersistent.ts`, `src/constructs/networking/index.ts`
+    - 2 AZ, `NatProvider.gateway()` 1개, private subnets 포함한 Vpc 생성
+    - `RemovalPolicy.RETAIN` 적용 대상 명시 (Design §1.4)
+    - SSM 파라미터 (`parameterStoreKeys.commonVpcId`) 에 VPC ID 등록
+    - **Requirements:** 5.2
+  - [x] 4.2 DataStorage NestedStack
+    - 파일: `src/constructs/data-storage/DataStorage.ts`, `src/constructs/data-storage/index.ts`
+    - `NestedStack` 으로 구현
+    - DynamoDB 테이블 7개 (customerLocations, warehouses, vehicles, orders, solverJobs, deliveryJobs, distanceCache) + 필요한 GSI (orders status, deliveryJobs solverJobId, customerLocations warehouseCode, warehouses warehouseCode)
+    - 분산 캐시 S3 버킷 1개, `encryption: s3.BucketEncryption.S3_MANAGED`, `blockPublicAccess: BLOCK_ALL`
+    - 각 테이블/버킷 이름을 `parameterStoreKeys` 에 해당하는 SSM 경로에 등록
+    - `pointInTimeRecovery` 설정은 원본 값(`true`)을 그대로 유지
+    - **Requirements:** 5.2, 5.4, 14.1, 16.1, 16.2, 16.8
+  - [x] 4.3 CognitoAuth NestedStack (`IdentityStack`)
+    - 파일: `src/constructs/cognito-auth/IdentityStack.ts`, `src/constructs/cognito-auth/index.ts`
+    - `cognito.UserPool` 생성: `passwordPolicy` 명시(Design §1.8 item 10), `selfSignUpEnabled: false`, admin email 초기 사용자 생성
+    - `UserPoolClient` 생성 및 `IdentityPool` 등 원본과 동일 구성
+    - 생성된 UserPool / Client ID 를 `backend` 가 읽을 수 있도록 public readonly 필드로 노출
+    - **Requirements:** 5.2, 5.5, 14.7
+  - [x] 4.4 WebHosting construct
+    - 파일: `src/constructs/web-hosting/WebsiteHosting.ts`, `src/constructs/web-hosting/index.ts`
+    - CloudFront + S3(OAI) 배포
+    - S3 버킷 `encryption: s3.BucketEncryption.S3_MANAGED`, `blockPublicAccess: BLOCK_ALL`
+    - `CfnOutput` `WebHostingDomain` 생성, `exportName: namespaced(this, 'WebHostingDomain')`
+    - **Requirements:** 5.6, 5.7, 14.1, 14.4, 16.2
+  - [x] 4.5 `PersistentBackendStack` 조립
+    - 파일: `src/stacks/PersistentBackendStack.ts`
+    - 위 4개 construct 인스턴스화, `setNamespace(this, props.namespace)` 호출
+    - `vpc`, `dataStorage`, `identity`, `websiteHosting` 을 public readonly 필드로 노출
+    - `bin/app.ts` 에 스택 등록 — **이 시점에 태스크 1.4 에서 추가한 임시 `PlaceholderStack` 과 관련 import 를 `bin/app.ts` 에서 반드시 제거한다**
+    - **Requirements:** 4.2, 4.3, 4.5, 5.1, 5.3
+  - [x] 4.6 PersistentBackendStack 스냅샷/리소스 카운트 테스트
+    - 파일: `test/stacks/PersistentBackendStack.spec.ts`
+    - `Template.fromStack` 으로 `AWS::S3::Bucket ≥ 2`, `AWS::DynamoDB::Table = 7`, `AWS::Cognito::UserPool = 1`, `AWS::CloudFront::Distribution = 1` 검증
+    - **Property 5: CfnOutput exportName namespace rule** — 모든 `CfnOutput.exportName` 이 `${namespace}-` 로 시작
+    - **Property 8: S3 encryption invariant** — 모든 S3 버킷이 `AES256` 암호화 적용
+    - **Validates: Requirements 5.4, 5.6, 5.7, 5.8, 12.4, 12.6, 14.1, 14.4, 16.2**
+
+- [x] 5. S5 — BackendStack (ApiWeb + 10개 Lambda)
+  - [x] 5.1 Website stub asset 작성
+    - 파일: `stub/website/index.html`
+    - Design §1.7 의 HTML 그대로 작성 (`<script src="/static/appvars.js"></script>` 포함)
+    - **Requirements:** 11.1
+  - [x] 5.2 Lambda 공용 유틸 `_shared`
+    - 파일: `lambda/_shared/response.ts`, `lambda/_shared/ddb.ts`, `lambda/_shared/env.ts`
+    - `json(statusCode, body)` 응답 헬퍼, `DynamoDBDocumentClient` 싱글턴, 환경변수 Zod 검증 헬퍼
+    - 모든 핸들러가 상대 경로로 import
+    - **Requirements:** 10.8
+  - [x] 5.3 api-web CRUD 매니저 Lambda 3종 구현 (customer-location / warehouse / vehicle)
+    - 파일: `lambda/api-web/customer-location-manager/index.ts`, `lambda/api-web/warehouse-manager/index.ts`, `lambda/api-web/vehicle-manager/index.ts`
+    - Design §2.10 예시를 베이스로 GET/POST/PUT/DELETE 분기, `@aws-sdk/lib-dynamodb` 사용
+    - SPDX 헤더 포함
+    - **Requirements:** 6.4, 10.1, 10.4, 10.5, 10.9
+  - [x] 5.4 api-web Query 계열 Lambda 5종 구현 (orders / solver-job / delivery-jobs / delivery-job-by-solver-job / distance-cache)
+    - 파일: `lambda/api-web/orders-query/index.ts`, `lambda/api-web/solver-job-query/index.ts`, `lambda/api-web/delivery-jobs-query/index.ts`, `lambda/api-web/delivery-job-by-solver-job-query/index.ts`, `lambda/api-web/distance-cache-query/index.ts`
+    - `QueryCommand` + `IndexName` (`INDEX_NAME` 환경변수) 사용
+    - read-only 엔드포인트(`delivery-job-by-solver-job-query`, `distance-cache-query`) 는 `grantReadData` 를 기대하도록 구현
+    - **Requirements:** 6.4, 6.5, 10.1, 10.4, 10.5
+  - [x] 5.5 api-web Rebuild / Presigned URL Lambda 2종
+    - 파일: `lambda/api-web/rebuild-distance-cache/index.ts`, `lambda/api-web/get-s3-presigned-url/index.ts`
+    - rebuild: `@aws-sdk/client-ssm` + `@aws-sdk/client-ecs` RunTask, 필요한 파라미터 7개를 환경변수로 수신
+    - presigned-url: `@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner`, GET presign
+    - **Requirements:** 6.4, 10.1, 10.4, 10.5, 10.9
+  - [x] 5.6 `ApiWeb` construct
+    - 파일: `src/constructs/api-web/ApiWeb.ts`, `src/constructs/api-web/index.ts`
+    - Design §2.9 의 `ApiWeb` 시그니처 그대로 구현
+    - `CognitoUserPoolsAuthorizer` 1개로 전 라우트 보호
+    - 각 Lambda 는 `AppNodejsFunction` 으로 생성, 전용 IAM (`grantReadData` / `grantReadWriteData` / `PolicyStatements.ssm.readParams`)
+    - `registerCrud` 내부 헬퍼로 `GET list / GET {id} / POST / PUT {id} / DELETE {id}` 라우트 바인딩
+    - **Requirements:** 6.2, 6.3, 6.4, 6.5, 10.3, 10.6, 10.7
+  - [x] 5.7 `BackendStack` 조립
+    - 파일: `src/stacks/BackendStack.ts`
+    - `ApiWeb` 인스턴스화, `persistent.identity.userPool` / DDB 테이블 참조 주입
+    - `s3-deployment.BucketDeployment` 으로 `props.assets.websiteBundlePath` (`stub/website`) 배포, `runtime` 미지정(CDK 기본)
+    - `AppVariables` 구성: UserPool ID, Client ID, region, RestApi URL, Mapbox token 을 JS 파일로 내보내 `/static/appvars.js` 로 업로드
+    - `bin/app.ts` 에 스택 등록 + `addDependency(persistent)`
+    - **Requirements:** 4.4, 4.6, 6.1, 6.6, 6.7, 6.8, 14.2
+  - [x] 5.8 BackendStack 리소스 구성 테스트
+    - 파일: `test/stacks/BackendStack.spec.ts`
+    - `AWS::ApiGateway::RestApi = 1`, 비즈니스 `AWS::Lambda::Function ≥ 10`, 모든 Lambda `Runtime: nodejs24.x` (Match.objectLike)
+    - CognitoAuthorizer attach 확인, `AWS::S3::Bucket` 암호화 검증
+    - **Property 4: Lambda runtime invariant**, **Property 8: S3 encryption invariant**
+    - **Validates: Requirements 6.2, 6.3, 6.4, 6.9, 10.3, 12.5, 14.1, 14.2, 14.3**
+  - [x] 5.9 Lambda handler entry 존재 property 테스트
+    - 파일: `test/lambda/handler-entries.spec.ts`
+    - Requirement 10.1 의 13개 핸들러 경로 리스트를 하드코딩하고 각각 `fs.existsSync` 로 검증
+    - **Property 7: Handler entry file existence**
+    - **Validates: Requirements 3.6, 10.1, 12.7**
+
+- [x] 6. S6 — OrderUploadStack (ApiOrder + 3개 Lambda)
+  - [x] 6.1 api-order Lambda 3종 구현
+    - 파일: `lambda/api-order/get-s3-presigned-url/index.ts`, `lambda/api-order/create-order-batch/index.ts`, `lambda/api-order/start-order-dispatch-task/index.ts`
+    - `get-s3-presigned-url`: `PutObjectCommand` + `getSignedUrl`, env `BUCKET_NAME`
+    - `create-order-batch`: `S3EventHandler`, 파싱된 객체를 `@aws-sdk/lib-dynamodb` `BatchWriteItem` 으로 upsert 후 `@aws-sdk/client-lambda` `Invoke` (async) 로 dispatch 호출
+    - `start-order-dispatch-task`: `@aws-sdk/client-ssm` `GetParameter` 7개 → `@aws-sdk/client-ecs` `RunTask`
+    - SPDX 헤더, `@aws-sdk/*` 만 사용
+    - **Requirements:** 7.3, 7.7, 10.1, 10.4, 10.5, 10.9
+  - [x] 6.2 `ApiOrder` construct
+    - 파일: `src/constructs/api-order/ApiOrder.ts`, `src/constructs/api-order/index.ts`
+    - 업로드용 S3 버킷 (`namespacedBucket(this, 'order-uploads')`, `S3_MANAGED`, `BLOCK_ALL`) 생성
+    - `RestApi` 에 `/upload/url` (GET, API key required) 와 `/dispatch` (POST) 라우트 연결
+    - `create-order-batch` 를 버킷 `OBJECT_CREATED` 이벤트 타겟으로 등록
+    - API key + UsagePlan 구성
+    - IAM: ssm 읽기, ecs RunTask + iam PassRole, lambda Invoke 권한 포함
+    - **Requirements:** 7.2, 7.3, 7.4, 7.5, 7.7, 14.1, 16.1, 16.2
+  - [x] 6.3 `OrderUploadStack` 조립
+    - 파일: `src/stacks/OrderUploadStack.ts`
+    - `ApiOrder` 인스턴스화, `bin/app.ts` 에 스택 등록 + `addDependency(persistent)`
+    - **Requirements:** 4.4, 7.1, 7.6
+  - [x] 6.4 OrderUploadStack 리소스 구성 테스트
+    - 파일: `test/stacks/OrderUploadStack.spec.ts`
+    - `AWS::S3::Bucket = 1` 이상 + 암호화 확인, `AWS::Lambda::Function = 3`, ApiKey + UsagePlan 존재, S3 이벤트 노티피케이션 확인
+    - **Property 4, Property 8** 적용
+    - **Validates: Requirements 7.2, 7.3, 7.4, 7.5, 7.7, 10.3, 14.1, 16.2**
+
+- [x] 7. S7 — DistanceCacheStack (EcsEc2Task + stub distancecache-util)
+  - [x] 7.1 `EcsEc2Task` construct
+    - 파일: `src/constructs/ecs-task/EcsEc2Task.ts`, `src/constructs/ecs-task/index.ts`
+    - props: `vpc`, `dockerImagePath`, `taskCommands?`, `cpu?`, `memoryMiB?`, `instanceType`, `hardwareType`, `taskRole?` (optional overrides)
+    - `AsgCapacityProvider` 사용, `enableManagedScaling: true`, `enableManagedTerminationProtection: false`, `desiredCapacity: 0`
+    - `ecs.ContainerImage.fromAsset(...)` 사용 시 `DockerImageAsset.platform` 명시
+    - `iam.ServicePrincipal('ecs-tasks.amazonaws.com')` 사용 (cdk-constants 제거)
+    - 생성된 cluster/capacityProvider/taskDefArn/containerName 을 public readonly 로 노출
+    - **Requirements:** 3.11, 8.3, 8.4, 8.6, 8.7, 14.5, 14.6
+  - [x] 7.2 Stub Dockerfile (distancecache-util)
+    - 파일: `stub/opt-engine/distancecache-util/Dockerfile`
+    - Design §1.7 그대로: `FROM public.ecr.aws/nginx/nginx:stable-alpine`, `HEALTHCHECK`, `EXPOSE 80`, `CMD ["nginx","-g","daemon off;"]`
+    - **Requirements:** 11.2, 11.3, 11.4, 11.5
+  - [x] 7.3 `DistanceCacheStack` 조립
+    - 파일: `src/stacks/DistanceCacheStack.ts`
+    - props 로 `vpc` 수신(`Vpc.fromLookup` 사용 금지), `EcsEc2Task` 생성
+    - `parameterStoreKeys.distanceCache*` 4개(ClusterName, AsgCapacityProvider, TaskDefArn, ContainerName) 를 SSM 파라미터로 등록
+    - `bin/app.ts` 에 스택 등록 + `addDependency(persistent)`
+    - **Requirements:** 4.4, 4.6, 8.1, 8.2, 8.5, 11.6, 11.7
+  - [x] 7.4 DistanceCacheStack 리소스 구성 테스트
+    - 파일: `test/stacks/DistanceCacheStack.spec.ts`
+    - `AWS::ECS::Cluster = 1`, `AWS::ECS::TaskDefinition = 1`, `AWS::AutoScaling::AutoScalingGroup = 1`, SSM Parameter 4개 존재
+    - `desiredCapacity: 0` 확인, `DockerImageAsset.platform` 이 합성 산출물에 포함되는지 확인
+    - **Validates: Requirements 8.2, 8.3, 8.5, 8.6, 8.7, 14.5**
+
+- [x] 8. S8 — OptimizationEngineStack (stub nextday-delivery)
+  - [x] 8.1 Stub Dockerfile (nextday-delivery)
+    - 파일: `stub/opt-engine/nextday-delivery/Dockerfile`
+    - Design §1.7 그대로 (distancecache-util 과 동일 base/health/expose)
+    - **Requirements:** 11.2, 11.3, 11.4, 11.5
+  - [x] 8.2 `OptimizationEngineStack` 조립
+    - 파일: `src/stacks/OptimizationEngineStack.ts`
+    - 7번에서 만든 `EcsEc2Task` 재사용, `dockerImagePath = props.assets.optEngineDockerPath`
+    - `parameterStoreKeys.optEngine*` 4개 SSM 파라미터 등록
+    - `desiredCapacity: 0` 유지
+    - `bin/app.ts` 에 스택 등록 + `addDependency(persistent)`
+    - **Requirements:** 4.4, 4.6, 9.1, 9.2, 9.3, 9.4, 9.5, 9.6
+  - [x] 8.3 OptimizationEngineStack 리소스 구성 테스트
+    - 파일: `test/stacks/OptimizationEngineStack.spec.ts`
+    - `AWS::ECS::Cluster = 1`, `AWS::ECS::TaskDefinition = 1`, SSM Parameter 4개 존재
+    - `desiredCapacity: 0` 확인
+    - **Validates: Requirements 9.2, 9.3, 9.4, 9.6**
+
+- [x] 9. S9 — E2E 통합 (bin/app.ts 최종 와이어링 + CDK v2 breaking-change 체크)
+  - [x] 9.1 `bin/app.ts` 최종 와이어링
+    - 파일: `bin/app.ts`
+    - Design §2.6 과 일치하도록 5개 스택 인스턴스화
+    - 모든 스택에 `{ env: { account, region } }` 전달 + `stackName: ${namespace}-{Name}`
+    - `backend.addDependency(persistent)` 외 3개도 명시
+    - DistanceCache / OptEngine 에 `vpc: persistent.vpc` 주입
+    - **Requirements:** 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7
+  - [x] 9.2 CDK v2 breaking change 체크리스트 적용 스윕
+    - 파일: `src/**/*.ts` (기존 construct/stack 순회 점검)
+    - 모든 `s3.Bucket` 에 `encryption: S3_MANAGED` 명시 여부 확인
+    - `BucketDeployment` 가 `Runtime.NODEJS_16_X` 를 참조하지 않음
+    - 모든 `CfnOutput.exportName` 이 namespace prefix (`/^[A-Za-z0-9]+-[A-Za-z0-9-]+$/`) 만족
+    - 모든 `DockerImageAsset` 에 `platform` 명시
+    - 모든 `AsgCapacityProvider` 에 `enableManagedTerminationProtection: false`
+    - 모든 `cognito.UserPool` 에 `passwordPolicy` 명시
+    - `cdk.json` context 에 `newStyleStackSynthesis`, `serverAccessLogsUseBucketPolicy`, `minimizePolicies` 포함
+    - **Requirements:** 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7, 14.8
+  - [x] 9.3 Stack set 합성 및 의존성 property 테스트
+    - 파일: `test/app/stack-set.spec.ts`
+    - `new App()` → `loadConfig()` (테스트 fixture yaml) → 5개 스택 인스턴스 생성 → `app.synth()` 로 assembly 생성
+    - **Property 3: Stack set resource-count invariant** — assembly.stacks.length === 5, 각 stack.stackName 이 `${namespace}-{PersistentBackend|Backend|OrderUpload|DistanceCache|OptimizationEngine}` 형식
+    - **Property 6: Stack dependency acyclicity** — Backend/OrderUpload/DistanceCache/OptimizationEngine 각각이 Persistent 에 dependsOn, 사이클 없음
+    - **Validates: Requirements 4.2, 4.3, 4.4, 4.7, 6.8, 7.6, 9.5**
+  - [x] 9.4 전체 synth 실행 — deprecation 경고 0 property 테스트
+    - 파일: `test/e2e/synth-no-deprecation.spec.ts`
+    - `child_process.spawnSync('pnpm', ['synth'], { cwd })` 로 실행하여 stderr 를 캡처
+    - **Property 10: Zero deprecation warnings on synth** — stdout/stderr 내 `/(?i)deprecat/` 매치 0 회, exit code 0
+    - **Validates: Requirements 13.5, 14.2, 14.3, 15.6**
+  - [x] 9.5 최종 품질 게이트 명령 실행 (S9 checkpoint 수용 기준)
+    - 명령: `pnpm lint && pnpm test && pnpm synth`
+    - 기대: 모두 종료 코드 0, synth stderr 의 deprecation 경고 0회
+    - 실패 시 9.1 ~ 9.4 로 회귀
+    - **Requirements:** 13.1, 13.2, 13.5, 15.6
+
+- [x] 10. S10 — Review (README 작성 + cfn-nag)
+  - [x] 10.1 README 작성
+    - 파일: `README.md`
+    - 내용: 사전 요건(Node ≥20 <25, pnpm ≥9), 설치/빌드/테스트/synth/deploy 명령, `config/default.yml` 스키마 요약, stub asset 교체 가이드(`apps_web`, `apps_opt_engine` 통합 후 `config.assets.*` 업데이트), 5개 스택 관계 다이어그램 참조
+    - **Requirements:** 16.6
+  - [x] 10.2 cfn-nag review 스크립트 검증
+    - 파일: `package.json` (`review`, `prereview` script), `reports/cfn-nag-report.json` (생성 산출물)
+    - `pnpm review` 를 실행하여 `reports/cfn-nag-report.json` 이 생성되고 critical 이슈 0건인지 확인
+    - 사전 조건: 로컬에 `cfn_nag_scan` 설치 (Docker 이미지 또는 gem). 미설치 환경에서는 skip 가능하므로 optional 태스크로 표기
+    - **Validates: Requirements 13.4, 15.7**
+
+## Notes
+
+- `*` 가 붙은 sub-task 는 선택적(property/unit/snapshot/통합 테스트, cfn-nag)이며 MVP 단계에서는 생략 가능. 다만 9.5 최종 게이트에는 선택 태스크 산출물이 일부 포함되므로, 완전한 품질 게이트를 원한다면 모든 `*` sub-task 를 완료하는 것을 권장한다.
+- Property 태스크는 Design §Correctness Properties 1–10 을 추적한다. 각 property 태스크 헤더에 `**Property N: Title**` 및 `**Validates: Requirements x.y**` 가 명시되어 있어 역추적이 가능하다.
+- Top-level 태스크(1 ~ 10) 는 Design §2.15 의 S1 ~ S10 체크포인트와 1:1 대응된다.
+- Stub asset(S5.1 / S7.2 / S8.1) 은 `apps_web`, `apps_opt_engine` 마이그레이션 완료 후 `config.assets.*` 경로를 교체하여 실제 산출물과 스왑하는 것이 후속 과제(Design §5).
+- 최종 수용 기준: `pnpm lint && pnpm test && pnpm synth` 가 **경고 0** 으로 통과 (태스크 9.5).
+
+## Workflow Completion
+
+이 워크플로우는 **design / requirements / tasks artifact 생성까지가 범위**다. 실제 구현(Lambda 코드 작성, CDK construct 작성, 배포)은 이 태스크 목록에 따라 이후 단계에서 수행된다.
+
+- 이 태스크 문서 자체는 이번 워크플로우의 최종 산출물이다.
+- 구현을 시작하려면 `tasks.md` 를 열고 각 태스크의 "Start task" 를 클릭하여 순차적으로 진행한다(1 → 10).
+- 각 top-level 태스크(S1 ~ S10) 완료 후 바로 다음 단계로 넘어가는 것을 기본 전략으로 한다.
+
+---
+
+- [x] 11. S11 — API 호환성 수정 (REST API V1 + CORS + 프론트엔드 응답 형식)
+  - [x] 11.1 Lambda 핸들러 타입을 REST API V1 호환으로 변경
+    - 모든 `api-web/*` 및 `api-order/*` Lambda 핸들러에서 `APIGatewayProxyHandlerV2` → `APIGatewayProxyHandler` 로 변경
+    - `event.requestContext.http.method` → `event.httpMethod` 로 변경
+    - 원인: CDK에서 `apigw.RestApi` (V1)를 사용하지만 핸들러가 HTTP API (V2) 형식으로 작성되어 `event.requestContext.http`가 `undefined`이므로 TypeError → Lambda 크래시 → 502 → CORS 에러로 표시됨
+    - **Requirements:** 17.1, 17.2
+  - [x] 11.2 응답 헬퍼에 CORS 헤더 추가
+    - 파일: `lambda/_shared/response.ts`
+    - `json()` 함수의 headers에 `Access-Control-Allow-Origin: *`, `Access-Control-Allow-Headers: Content-Type,Authorization`, `Access-Control-Allow-Methods: GET,POST,PUT,DELETE,OPTIONS` 추가
+    - 이유: Lambda 에러 시에도 CORS 헤더가 포함되어야 브라우저가 에러 응답을 읽을 수 있음
+    - **Requirements:** 17.3
+  - [x] 11.3 프론트엔드 기대 응답 형식으로 변경
+    - 모든 CRUD/Query Lambda 핸들러의 응답을 `{ data: { Items: [...] } }` (list) / `{ data: { Item: {...} } }` (single) 형식으로 변경
+    - 원인: 프론트엔드 `crudService.ts`가 `response.data.Items` / `response.data.Item`으로 destructuring하므로, 배열/객체를 직접 반환하면 `t.data is undefined` 에러 발생
+    - **Requirements:** 17.4, 17.5, 17.6
+  - [x] 11.4 rebuild-distance-cache 엔드포인트 경로 수정
+    - CDK `ApiWeb.ts`: `api/web/rebuild-distance-cache` (POST) → `api/web/build-dist-cache/{warehouseCode}` (GET) 으로 변경
+    - Lambda 핸들러: `event.pathParameters?.warehouseCode`에서 warehouse code를 추출하여 ECS task의 `WAREHOUSE_CODE` 환경변수로 전달
+    - 원인: 프론트엔드 `NextDayDelivery.ts`가 `GET /build-dist-cache/{warehouseCode}`를 호출하지만 CDK에서는 다른 경로/메서드로 등록되어 있어 403 발생
+    - **Requirements:** 17.7, 17.8
+
+- [x] 12. S12 — Fargate 전환 및 ECS RunTask 수정
+  - [x] 12.1 Config를 Fargate 옵션으로 변경
+    - `config/default.yml`: `instanceOptions` → `fargateOptions` (cpu/memory/architecture)
+    - `src/config/schema.ts`: `InstanceOptionsSchema` → `FargateOptionsSchema`
+    - 모든 스택/테스트에서 참조 업데이트
+    - **Requirements:** 18.1
+  - [x] 12.2 ECS RunTask Lambda를 Fargate 호환으로 수정
+    - `rebuild-distance-cache`: `capacityProviderStrategy` → `launchType: 'FARGATE'` + `networkConfiguration`
+    - `start-order-dispatch-task`: 동일 패턴 적용
+    - VPC 서브넷 조회를 위해 `EC2Client.DescribeSubnets` 추가
+    - `@aws-sdk/client-ec2` 의존성 추가
+    - **Requirements:** 18.2, 18.3, 18.7
+  - [x] 12.3 start-order-dispatch-task를 OptEngine 클러스터로 변경
+    - `OrderUploadStack.ts`: SSM 키를 `distanceCache*` → `optEngine*`으로 변경
+    - Lambda: `ORDER_DATE`, `WAREHOUSE_CODE`를 요청 body에서 추출하여 컨테이너에 전달
+    - **Requirements:** 18.4, 18.5
+  - [x] 12.4 taskCommands 제거 (Dockerfile CMD 사용)
+    - `DistanceCacheStack.ts`: `taskCommands` 제거
+    - `OptimizationEngineStack.ts`: `taskCommands` 제거
+    - **Requirements:** 18.8
+
+- [x] 13. S13 — Dockerfile 수정 (환경변수 치환 + jar 이름)
+  - [x] 13.1 distancecache-util Dockerfile 수정
+    - `ENTRYPOINT ["/bin/sh", "-c"]` + `CMD ["java -jar ... $ENV_VAR"]` 패턴으로 변경
+    - CLI 옵션을 jar의 picocli 인터페이스에 맞게 수정 (`--loctablename`, `--tablename`, `--bucketname`, `--warehouse`, `-p=s3`)
+    - **Requirements:** 19.1, 19.3
+  - [x] 13.2 nextday-delivery Dockerfile 수정
+    - 동일한 `ENTRYPOINT`/`CMD` 패턴 적용
+    - 올바른 jar 이름 (`delivery-dispatch.jar`) 사용
+    - **Requirements:** 19.2, 19.4
+
+- [x] 14. S14 — Order Upload 파이프라인 수정
+  - [x] 14.1 create-order-batch Lambda에 CSV 파싱 추가
+    - JSON/CSV 자동 감지 (첫 문자가 `[` 또는 `{`이면 JSON, 아니면 CSV)
+    - CSV: 첫 줄 헤더, 나머지 데이터 행으로 파싱
+    - **Requirements:** 20.1, 20.2
+  - [x] 14.2 OrderUploadStack에 SSM 파라미터 등록
+    - API URL과 API Key ID를 SSM에 등록
+    - `ssm` import 추가
+    - **Requirements:** 20.3
+  - [x] 14.3 upload-order-with-presigned-url.sh 스크립트 수정
+    - API Key ID → `aws apigateway get-api-key --include-value`로 실제 값 조회
+    - POST form upload → PUT presigned URL 방식으로 변경
+    - 엔드포인트 경로를 `upload/url` (GET)로 수정
+    - **Requirements:** 20.4, 20.5
