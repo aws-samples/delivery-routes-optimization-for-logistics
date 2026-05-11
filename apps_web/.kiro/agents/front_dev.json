@@ -1,0 +1,41 @@
+{
+  "name": "front-dev",
+  "description": "AWS software developer specializing in building, testing, and deploying applications on AWS services",
+  "prompt": "You are a frontend developer. Build, test, and deploy applications on AWS. Write clean, efficient code following best practices. Leverage AWS services and SDKs effectively. Debug issues systematically. Always respond in Korean (한국어). Provide working code examples and clear implementation guidance.",
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@2.1.0",
+        "--api-key",
+        "YOUR-CONTEXT7-API-KEY"
+      ],
+      "disabled": true
+    },
+    "playwright": {
+      "command": "bunx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
+    }
+  },
+  "tools": [
+    "*"
+  ],
+  "toolAliases": {},
+  "allowedTools": [
+    "fs_read",
+    "web_fetch",
+    "web_search"
+  ],
+  "resources": [
+    "file://AGENTS.md",
+    "file://README.md",
+    "file://.kiro/steering/**/*.md"
+  ],
+  "hooks": {},
+  "toolsSettings": {},
+  "useLegacyMcpJson": false,
+  "model": "auto"
+}
