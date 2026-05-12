@@ -121,15 +121,15 @@ You can also place a `.env` file at the project root (loaded via dotenv with `ov
 
 ## Asset Paths
 
-`config/default.yml` 의 `assets` 세 필드는 **필수** 이며, 실제 빌드 산출물이 존재하는 디렉터리를 가리켜야 합니다. CDK synth 시점에 `s3deploy.Source.asset()` 와 `ecs.ContainerImage.fromAsset()` 가 이 경로들을 스테이징 합니다.
+The three `assets` fields in `config/default.yml` are **required** and must point at directories that contain real build artifacts. At CDK synth time, `s3deploy.Source.asset()` and `ecs.ContainerImage.fromAsset()` stage those paths into the asset bundle.
 
 | Key | Must contain | Produced by |
 |---|---|---|
-| `assets.websiteBundlePath` | `index.html` 과 정적 에셋 | `cd apps_web && pnpm install && pnpm build` → `apps_web/dist/` |
-| `assets.distanceCacheDockerPath` | `Dockerfile` (+ jar, OSM PBF 등) | `cd apps_opt_engine && ./build_opt_engine.sh` → `apps_opt_engine/build/distancecache-util/` |
+| `assets.websiteBundlePath` | `index.html` and static assets | `cd apps_web && pnpm install && pnpm build` → `apps_web/dist/` |
+| `assets.distanceCacheDockerPath` | `Dockerfile` (+ jar, OSM PBF, …) | `cd apps_opt_engine && ./build_opt_engine.sh` → `apps_opt_engine/build/distancecache-util/` |
 | `assets.optEngineDockerPath` | `Dockerfile` (+ jar, solver-config, OSM PBF) | `cd apps_opt_engine && ./build_opt_engine.sh` → `apps_opt_engine/build/nextday-delivery/` |
 
-기본 `config/default.yml` 의 값은 이미 위 경로들(`../apps_web/dist`, `../apps_opt_engine/build/...`) 을 가리키므로, 빌드를 먼저 수행한 뒤 `pnpm synth` / `pnpm deploy:dev` 를 실행하면 됩니다. 빌드 산출물이 없으면 synth 단계에서 경로가 없다는 에러로 실패합니다.
+The default `config/default.yml` already points at those relative paths (`../apps_web/dist`, `../apps_opt_engine/build/...`). Build the workspaces first, then run `pnpm synth` / `pnpm deploy:dev`. If the build artifacts are missing, synth fails with a "path not found" error.
 
 ## Project Structure
 
