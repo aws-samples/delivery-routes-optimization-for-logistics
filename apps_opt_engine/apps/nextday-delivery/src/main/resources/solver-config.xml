@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+    SPDX-License-Identifier: MIT-0
+
+    OptaPlanner 10 schema note:
+    * Termination configuration is applied in Java code via
+      `DispatchService` after loading this XML, to avoid schema
+      compatibility issues with the `<termination>` element location.
+-->
+
+<solver xmlns="https://www.optaplanner.org/xsd/solver"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://www.optaplanner.org/xsd/solver https://www.optaplanner.org/xsd/solver/solver.xsd">
+
+    <!-- To solve faster by saturating multiple CPU cores -->
+    <moveThreadCount>AUTO</moveThreadCount>
+
+    <solutionClass>dev.aws.proto.apps.nextday.planner.solution.DispatchSolution</solutionClass>
+    <entityClass>dev.aws.proto.apps.nextday.domain.planning.VisitOrVehicle</entityClass>
+    <entityClass>dev.aws.proto.apps.nextday.domain.planning.PlanningVisit</entityClass>
+
+    <scoreDirectorFactory>
+        <constraintProviderClass>
+            dev.aws.proto.apps.nextday.planner.solution.DispatchConstraintProvider
+        </constraintProviderClass>
+        <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
+    </scoreDirectorFactory>
+
+    <constructionHeuristic>
+        <constructionHeuristicType>FIRST_FIT</constructionHeuristicType>
+    </constructionHeuristic>
+
+    <localSearch>
+        <unionMoveSelector>
+            <changeMoveSelector/>
+            <swapMoveSelector/>
+            <subChainChangeMoveSelector>
+                <selectReversingMoveToo>true</selectReversingMoveToo>
+            </subChainChangeMoveSelector>
+            <subChainSwapMoveSelector>
+                <selectReversingMoveToo>true</selectReversingMoveToo>
+            </subChainSwapMoveSelector>
+        </unionMoveSelector>
+        <acceptor>
+            <lateAcceptanceSize>400</lateAcceptanceSize>
+        </acceptor>
+        <forager>
+            <acceptedCountLimit>4</acceptedCountLimit>
+        </forager>
+    </localSearch>
+</solver>

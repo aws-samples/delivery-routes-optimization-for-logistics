@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "./apps_infra"
+		},
+		{
+			"path": "./apps_opt_engine"
+		},
+		{
+			"path": "./apps_web"
+		}
+	],
+	"settings": {
+		"java.configuration.updateBuildConfiguration": "interactive",
+		"java.compile.nullAnalysis.mode": "automatic"
+	}
+}

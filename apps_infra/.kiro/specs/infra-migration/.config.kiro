@@ -1,0 +1,9 @@
+{
+  "specId": "infra-migration",
+  "specType": "feature",
+  "workflowType": "design-first",
+  "generationMode": "design-first",
+  "designArtifacts": ["high-level", "low-level"],
+  "createdAt": "2026-05-06",
+  "description": "Migrate delivery-routes-optimization-for-logistics/apps/infra to apps_infra as a single-package pnpm project on AWS CDK 2.252.0 with Node.js 24 Lambdas."
+}
