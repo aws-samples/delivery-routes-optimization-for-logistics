@@ -103,7 +103,7 @@ Open `apps_infra/config/default.yml` and adjust the values for your environment.
 
 ```yaml
 env:
-  account: '025066253622'          # ← your 12-digit AWS account ID
+  account: 'XXXXXXXXXXXX'          # ← your 12-digit AWS account ID
   region: us-east-1                # ← target region
 
 namespace: devproto                # ← resource namespace (lowercase letters / digits recommended)

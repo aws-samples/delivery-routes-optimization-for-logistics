@@ -3,8 +3,9 @@
 
 # environment vars
 env:
-  # AWS Account ID (12-digit integer)
-  account: '025066253622'
+  # AWS Account ID (12-digit integer) — REPLACE with your own before deploying.
+  # The value is validated by Zod and `cdk deploy` will fail until it is real.
+  account: 'XXXXXXXXXXXX'
 
   # AWS region string
   region: us-east-1

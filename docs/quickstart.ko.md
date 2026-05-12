@@ -103,7 +103,7 @@ pnpm build
 
 ```yaml
 env:
-  account: '025066253622'          # ← 본인 AWS 계정 ID (12자리)
+  account: 'XXXXXXXXXXXX'          # ← 본인 AWS 계정 ID (12자리)
   region: us-east-1                # ← 배포 리전
 
 namespace: devproto                # ← 리소스 네임스페이스 (영문 소문자/숫자 권장)
