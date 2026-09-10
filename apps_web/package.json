@@ -18,7 +18,7 @@
     "@cloudscape-design/global-styles": "^1.0.58",
     "@mapbox/polyline": "^1.2.1",
     "aws-amplify": "^6.17.0",
-    "axios": "^1.16.0",
+    "axios": "^1.18.0",
     "dayjs": "^1.11.20",
     "immer": "^11.1.6",
     "maplibre-gl": "^6.4.1",
